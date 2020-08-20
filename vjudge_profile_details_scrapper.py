@@ -4,7 +4,8 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 import requests
-#import time
+import time
+import datetime
 from bs4 import BeautifulSoup
 import csv
 import re
@@ -35,7 +36,7 @@ def get_handles_list():
                "Wasi00007", "trk111", "NadmanKhan", "Moumi_", "toufique525", "2011046642_Opy", "vedistaan",
                "TaneemAhmed", "maxim_v2", "Fahimmanowar", "Junayed_Hasan", "maruf22", "Jushraf", "RifatXia",
                "Rejuana", "omi_farhan75", "OmarHaroon", "Tajreean_Ahmed", "Tayeb183", "Simanta_Mostafa", "MaishaAmin",
-               "arman39", "Lamia_Munira", "Ahamed_TJ", "ripcode", "Sunjaree"]
+               "arman39", "Lamia_Munira", "Ahamed_TJ", "ripcode", "Sunjaree", "ms166"]
     return handles
 
 
@@ -48,8 +49,8 @@ if __name__ == '__main__':
         solve_list.append(scrape_data(user))
     sorted_list = sorted(solve_list, key=lambda x: (x[2], x[3]), reverse=True)
     sorted_list.insert(0, ["Handle", "Last 7 days", "Last 30 days", "Overall solve"])
-    #print(sorted_list)
-    with open("rank_list_13_08_2020.csv", "w+", newline='') as my_csv:
+    # print(sorted_list)
+    with open("rank_list_" + datetime.datetime.today().strftime("%d-%m-%Y") + ".csv", "w+", newline='') as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(sorted_list)
 

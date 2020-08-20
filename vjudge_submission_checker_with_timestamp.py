@@ -4,7 +4,8 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 import requests
-# import time
+import time
+import datetime
 from bs4 import BeautifulSoup
 import csv
 import json
@@ -16,8 +17,8 @@ url_contest_info = "https://vjudge.net/contest/rank/single/%s"
 # url = "https://vjudge.net/status/data/?start=0&length=20&res=1&inContest=true&contestId=389090"
 
 
-def scrape_data(contest_id, users_map, output_list, total_solve):
-    solve_map = get_solve_map(contest_id)
+def scrape_data(contest_id, users_map, output_list, total_solve, start_time=0):
+    solve_map = get_solve_map(contest_id, start_time)
     contest_name = get_contest_name(contest_id)
     output_list[0].append(contest_name)
     for user in users_map:
@@ -40,10 +41,11 @@ def get_contest_name(contest_id):
     return contest_data["title"]
 
 
-def get_solve_map(contest_id):
+def get_solve_map(contest_id, start_time=0):
     map = {}
     time = 0
     while True:
+        flag = True
         url = url_format % (time, contest_id)
         time = time + 20
         response = requests.get(url)
@@ -53,6 +55,9 @@ def get_solve_map(contest_id):
             break
         if "data" in submission_data:
             for data in submission_data["data"]:
+                if "time" not in data or data["time"] < start_time:
+                    flag = False
+                    break
                 if "statusCanonical" in data and data["statusCanonical"] == "AC":
                     try:
                         # (data["userName"], data["contestNum"])
@@ -61,9 +66,10 @@ def get_solve_map(contest_id):
                         if user not in map:
                             map[user] = set()
                         map[user].add(problem)
-
-                    except:
+                    except KeyError:
                         continue
+        if not flag:
+            break
     return map
 
 
@@ -88,22 +94,26 @@ def get_handles_map():
 def get_contest_list():
     contest_list = ["372404", "372405", "378225", "379026", "379283", "379286", "380051", "380795", "381124", "382198",
                     "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "388036"]
-    # contest_list = ["389090"]
+    # contest_list = ["389090"] # for testing purpose
     return contest_list
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    from_time = int(round(time.mktime(time.strptime('2020-08-09 00:00:00', '%Y-%m-%d %H:%M:%S')) * 1000))
     handles_list = get_handles_list()
     handles_map = get_handles_map()
     contest_list = get_contest_list()
-    output_list = [["Username"]]
     total_solve = [0] * (len(handles_list) + 1)
+    output_list = [["Username"]]
+
     for user in handles_list:
         output_list.append([user])
+
     print(output_list)
+
     for contest_id in contest_list:
-        scrape_data(contest_id, handles_map, output_list, total_solve)
+        scrape_data(contest_id, handles_map, output_list, total_solve, from_time)
         print("done contest", contest_id)
 
     output_list[0].append("Total Solve")
@@ -112,7 +122,7 @@ if __name__ == '__main__':
 
     print(output_list)
 
-    with open("rank_list_14_08_2020.csv", "w+", newline='') as my_csv:
+    with open("rank_list_from_08-09-2020_to_08-19-2020.csv", "w+", newline='') as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(output_list)
 

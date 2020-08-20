@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/OJScrapper.iml" filepath="$PROJECT_DIR$/.idea/OJScrapper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/OJscraper.iml" filepath="$PROJECT_DIR$/.idea/OJscraper.iml" />
     </modules>
   </component>
 </project>
