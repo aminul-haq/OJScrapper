@@ -78,7 +78,7 @@ def get_handles_list():
                "Wasi00007", "trk111", "NadmanKhan", "Moumi_", "toufique525", "2011046642_Opy", "vedistaan",
                "TaneemAhmed", "maxim_v2", "Fahimmanowar", "Junayed_Hasan", "maruf22", "Jushraf", "RifatXia",
                "Rejuana", "omi_farhan75", "OmarHaroon", "Tajreean_Ahmed", "Tayeb183", "Simanta_Mostafa", "MaishaAmin",
-               "arman39", "Lamia_Munira", "Ahamed_TJ", "ripcode", "Sunjaree", "ms166"]
+               "arman39", "Lamia_Munira", "Ahamed_TJ", "ripcode", "Sunjaree", "ms166", "Antony_Wu"]
     return handles
 
 
@@ -93,7 +93,7 @@ def get_handles_map():
 
 def get_contest_list():
     contest_list = ["372404", "372405", "378225", "379026", "379283", "379286", "380051", "380795", "381124", "382198",
-                    "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "388036"]
+                    "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "390274"]
     # contest_list = ["389090"] # for testing purpose
     return contest_list
 

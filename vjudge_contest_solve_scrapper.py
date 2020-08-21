@@ -4,7 +4,8 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 import requests
-# import time
+import time
+import datetime
 from bs4 import BeautifulSoup
 import csv
 import json
@@ -72,7 +73,7 @@ def get_handles_list():
                "Wasi00007", "trk111", "NadmanKhan", "Moumi_", "toufique525", "2011046642_Opy", "vedistaan",
                "TaneemAhmed", "maxim_v2", "Fahimmanowar", "Junayed_Hasan", "maruf22", "Jushraf", "RifatXia",
                "Rejuana", "omi_farhan75", "OmarHaroon", "Tajreean_Ahmed", "Tayeb183", "Simanta_Mostafa", "MaishaAmin",
-               "arman39", "Lamia_Munira", "Ahamed_TJ", "ripcode", "Sunjaree", "ms166"]
+               "arman39", "Lamia_Munira", "Ahamed_TJ", "ripcode", "Sunjaree", "ms166", "Antony_Wu"]
     return handles
 
 
@@ -87,7 +88,7 @@ def get_handles_map():
 
 def get_contest_list():
     contest_list = ["372404", "372405", "378225", "379026", "379283", "379286", "380051", "380795", "381124", "382198",
-                    "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "388036"]
+                    "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "388036", "390274"]
     # contest_list = ["389090"]
     return contest_list
 
@@ -112,7 +113,7 @@ if __name__ == '__main__':
 
     print(output_list)
 
-    with open("rank_list_14_08_2020.csv", "w+", newline='') as my_csv:
+    with open("rank_list_" + datetime.datetime.today().strftime("%d-%m-%Y") + ".csv", "w+", newline='') as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(output_list)
 
