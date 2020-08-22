@@ -14,4 +14,5 @@ def get_vjudge_profile(username):
     return solve_details(username)
 
 
-app.run(port=5000)
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
