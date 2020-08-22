@@ -8,7 +8,9 @@ def solve_details(handle):
     response = requests.get(url)
     # soup = BeautifulSoup(response.text, "html.parser")
     solve_data = json.loads(response.text)
-    print(solve_data)
+    #print(solve_data)
+    return solve_data
+
 
 
 def get_handles_list():

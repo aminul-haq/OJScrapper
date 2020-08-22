@@ -1,4 +1,5 @@
 from flask import Flask
+from scrappers.vjudge_profile_details_scrapper import *
 
 app = Flask(__name__)
 
@@ -8,4 +9,9 @@ def home():
     return "Hello, World!"
 
 
-app.run(port=5000)
+@app.route("/vjudge/<string:username>", methods=["GET"])
+def get_vjudge_profile(username):
+    return solve_details(username)
+
+
+app.run(port=5000, debug=True)
