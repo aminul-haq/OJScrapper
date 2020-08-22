@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     print(output_list)
 
-    with open("rank_list_from_08-09-2020_to_08-19-2020.csv", "w+", newline='') as my_csv:
+    with open("output/rank_list_from_08-09-2020_to_08-19-2020.csv", "w+", newline='') as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(output_list)
 
