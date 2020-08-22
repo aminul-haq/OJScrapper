@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-
+import pandas
 
 def solve_details(handle):
     url = "https://vjudge.net/user/solveDetail/" + handle
@@ -9,8 +9,9 @@ def solve_details(handle):
     # soup = BeautifulSoup(response.text, "html.parser")
     solve_data = json.loads(response.text)
     #print(solve_data)
-    return solve_data
-
+    #return solve_data
+    #print(pandas.json_normalize(solve_data).to_html)
+    return pandas.json_normalize(solve_data).to_html()
 
 
 def get_handles_list():
