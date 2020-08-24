@@ -6,6 +6,8 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import lxml
+import csv
 
 USERNAME = "askinimran@gmail.com"
 PASSWORD = "rcqene5i"
@@ -36,13 +38,21 @@ def scrape_submission(session, user_id):
     for row in tables:
         for x in row.values.tolist():
             sub_list.extend([int(s) for s in str(x).split() if s.isdigit()])
-    print(sub_list)
+    # print(sub_list)
+    solves_set = set(sub_list)
+    output_list = [["Problem", "Solved"]]
+    for i in range(1000, 1435):
+        output_list.append([i, i in solves_set ])
+
+    with open("output/loj_" + user_id + ".csv", "w+", newline='') as my_csv:
+        csv_writer = csv.writer(my_csv, delimiter=',')
+        csv_writer.writerows(output_list)
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     session = getSession()
-    user_id = "42920"
+    user_id = "25347"
     scrape_submission(session, user_id)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -8,7 +8,7 @@ def solve_details(handle):
     response = requests.get(url)
     # soup = BeautifulSoup(response.text, "html.parser")
     solve_data = json.loads(response.text)
-    #print(solve_data)
+    print(solve_data)
     #return solve_data
     #print(pandas.json_normalize(solve_data).to_html)
     return pandas.json_normalize(solve_data).to_html()
