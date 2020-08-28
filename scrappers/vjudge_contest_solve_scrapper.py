@@ -87,9 +87,10 @@ def get_handles_map():
 
 
 def get_contest_list():
-    contest_list = ["372404", "372405", "378225", "379026", "379283", "379286", "380051", "380795", "381124", "382198",
-                    "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "388036", "390274"]
-    contest_list = ["389090"]
+    contest_list = ["372404", "372405", "378225", "378794", "379026", "379283", "379286", "380051", "380795", "381124",
+                    "382198", "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "388036",
+                    "390274", "391153"]
+    #contest_list = ["389090"]
     return contest_list
 
 
@@ -113,7 +114,8 @@ if __name__ == '__main__':
 
     print(output_list)
 
-    with open("output/rank_list_" + datetime.datetime.today().strftime("%d-%m-%Y") + ".csv", "w+", newline='') as my_csv:
+    with open("output/rank_list_" + datetime.datetime.today().strftime("%d-%m-%Y") + ".csv", "w+",
+              newline='') as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(output_list)
 
