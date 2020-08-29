@@ -1,6 +1,5 @@
 from flask_pymongo import pymongo
 
-
 # CONNECTION_STRING = "mongodb+srv://admin:admin@cluster0.s022h.mongodb.net/test?retryWrites=true&w=majority"
 # client = pymongo.MongoClient(CONNECTION_STRING)
 # db = client.get_database('test')
@@ -9,7 +8,6 @@ from flask_pymongo import pymongo
 client = pymongo.MongoClient(
     "mongodb+srv://admin:admin@cluster0.s022h.mongodb.net/test?retryWrites=true&w=majority")
 db = client.get_database("test")
-db.co
 
 print(db.list_collection_names())
 
@@ -24,4 +22,3 @@ print(db.list_collection_names())
 #             {'name': 'VolkswagenX', 'price': 21600}]
 # x = db.test.insert_many(cars)
 # print(x)
-
