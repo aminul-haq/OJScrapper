@@ -9,7 +9,6 @@ from flask_pymongo import pymongo
 client = pymongo.MongoClient(
     "mongodb+srv://admin:admin@cluster0.s022h.mongodb.net/test?retryWrites=true&w=majority")
 db = client.get_database("test")
-db.co
 
 print(db.list_collection_names())
 
