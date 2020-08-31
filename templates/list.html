@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block main %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<div id="piechart"></div>
+
+<script>
+    let obj = {{username | tojson | safe}}
+    let ara = [['Online Judge', 'Total Solved']]
+
+    for (let key in obj) {
+        let elem = [key, obj[key]];
+        ara.push(elem);
+    }
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+  var data = google.visualization.arrayToDataTable(ara);
+
+  var options = {'title':'My Solved Problems', 'width':550, 'height':400};
+
+  var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+  chart.draw(data, options);
+}
+</script>
+
+{% endblock %}

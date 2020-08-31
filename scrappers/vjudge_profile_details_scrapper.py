@@ -8,11 +8,14 @@ def solve_details(handle):
     response = requests.get(url)
     # soup = BeautifulSoup(response.text, "html.parser")
     solve_data = json.loads(response.text)
-    print(solve_data)
-    #return solve_data
+    # print(solve_data)
+    # return solve_data["acRecords"]
     #print(pandas.json_normalize(solve_data).to_html)
-    return pandas.json_normalize(solve_data).to_html()
-
+    # return pandas.json_normalize(solve_data).to_html()
+    user_details = {}
+    for data in solve_data["acRecords"]:
+        user_details[data] = len(solve_data["acRecords"][data])
+    return user_details
 
 def get_handles_list():
     handles = ["sarwar_khalid", "Pharaoh28", "arfaqur", "abdullah_mahmud7", "FairoozR", "necromancer", "bashem",
