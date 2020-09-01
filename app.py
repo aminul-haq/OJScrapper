@@ -15,7 +15,10 @@ def home():
 
 @app.route("/vjudge/<string:username>", methods=["GET"])
 def get_vjudge_profile(username):
-    return solve_details(username)
+    try:
+        return solve_details(username), 200
+    except:
+        return "error", 404
 
 
 if __name__ == '__main__':
