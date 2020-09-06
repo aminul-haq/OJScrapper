@@ -39,6 +39,9 @@ class UserRegister(Resource):
         if UserModel.get_by_username(data['username']):
             return {"message": "A user with that username already exists"}, 400
 
+        if UserModel.get_by_username(data['email']):
+            return {"message": "A user with that email already exists"}, 400
+
         user = UserModel(**data)
         user.save_to_mongo()
 
