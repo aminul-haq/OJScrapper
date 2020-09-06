@@ -3,6 +3,7 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from resources.user import *
 from common.database import Database
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -13,6 +14,7 @@ app.secret_key = "abcdxyz"
 
 api = Api(app)
 jwt = JWTManager(app)
+CORS(app)
 
 
 @jwt.user_claims_loader
