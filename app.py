@@ -24,7 +24,7 @@ def add_claims_to_jwt(identity):
 
 
 api.add_resource(UserRegister, '/register')
-api.add_resource(User, '/user/<str:username>')
+api.add_resource(User, '/user/<string:username>')
 api.add_resource(UserLogin, '/login')
 api.add_resource(TokenRefresh, '/refresh')
 api.add_resource(UserLogout, '/logout')
