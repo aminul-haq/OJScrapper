@@ -70,8 +70,7 @@ class User(Resource):
 
 
 class Lookup(Resource):
-    @staticmethod
-    def get():
+    def get(self):
         data = request.get_json()
         if data and "username" in data and "email" in data:
             user_by_username = UserModel.get_by_username(data["username"])
@@ -85,12 +84,11 @@ class Lookup(Resource):
 
 
 class UserLogin(Resource):
-    @staticmethod
     def post(self):
         data = request.get_json()
         user = UserModel.get_by_username(data['username'])
         if user and UserModel.login_valid_username(data["username"], data["password"]):
-            access_token = create_access_token(identity=data.username, fresh=True)
+            access_token = create_access_token(identity=data["username"], fresh=True)
             refresh_token = create_refresh_token(user.id)
             return {
                        'access_token': access_token,
