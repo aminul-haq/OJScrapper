@@ -24,6 +24,11 @@ def add_claims_to_jwt(identity):
     return {'is_admin': False}
 
 
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    return decrypted_token['jti'] in BLACKLIST  # Here we blacklist particular JWTs that have been created in the past.
+
+
 api.add_resource(UserRegister, '/register')
 api.add_resource(User, '/user/<string:username>')
 api.add_resource(UserLogin, '/login')

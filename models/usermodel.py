@@ -22,7 +22,6 @@ class UserModel(UserMixin):
 
     @classmethod
     def get_by_username(cls, username):
-        print("looking for", username)
         data = Database.find_one("users", {"username": username})
         if data is not None:
             return cls(**data)
@@ -96,7 +95,8 @@ class UserModel(UserMixin):
             "email": self.email,
             "_id": self.id,
             "username": self.username,
-            "password": generate_password_hash(self.password).decode("utf-8")
+            "password": generate_password_hash(self.password).decode("utf-8"),
+            "is_admin": self.is_admin
         }
 
     def save_to_mongo(self):

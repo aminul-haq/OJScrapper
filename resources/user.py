@@ -60,7 +60,8 @@ class User(Resource):
     @jwt_required
     def delete(cls, username: str):
         claims = get_raw_jwt()
-        if not claims["is_admin"]:
+        print(claims)
+        if not claims["identity"] == "admin":
             return {"message": "Admin privilege required"}, 401
         user = UserModel.get_by_username(username)
         if not user:
@@ -70,6 +71,7 @@ class User(Resource):
 
 
 class Lookup(Resource):
+    @jwt_required
     def get(self):
         data = request.get_json()
         if data and "username" in data and "email" in data:
