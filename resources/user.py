@@ -9,43 +9,33 @@ from flask_jwt_extended import (
     jwt_required,
     get_raw_jwt
 )
-from models.usermodel import UserModel
+from models.user_model import UserModel
 from common.blacklist import BLACKLIST
+from models.oj_model import OjModel
 
-
-# _user_parser = reqparse.RequestParser()
-# _user_parser.add_argument('email',
-#                           type=str,
-#                           required=False,
-#                           help="This field cannot be blank."
-#                           )
-#
-# _user_parser.add_argument('password',
-#                           type=str,
-#                           required=True,
-#                           help="This field cannot be blank."
-#                           )
-# _user_parser.add_argument('username',
-#                           type=str,
-#                           required=True,
-#                           help="This field cannot be blank."
-#                           )
+USERNAME = "username"
+EMAIL = "email"
+MESSAGE = "message"
+OJ_INFO = "oj_info"
+PASSWORD = "password"
 
 
 class UserRegister(Resource):
     def post(self):
         data = request.get_json()
+        if UserModel.get_by_username(data[USERNAME]):
+            return {MESSAGE: "A user with that username already exists"}, 400
 
-        if UserModel.get_by_username(data['username']):
-            return {"message": "A user with that username already exists"}, 400
-
-        if UserModel.get_by_username(data['email']):
-            return {"message": "A user with that email already exists"}, 400
+        if UserModel.get_by_username(data[EMAIL]):
+            return {MESSAGE: "A user with that email already exists"}, 400
 
         user = UserModel(**data)
         user.save_to_mongo()
 
-        return {"message": "User created successfully."}, 201
+        oj_data = OjModel(data[USERNAME])
+        oj_data.save_to_mongo()
+
+        return {MESSAGE: "User created successfully."}, 201
 
 
 class User(Resource):
@@ -53,7 +43,7 @@ class User(Resource):
     def get(cls, username: str):
         user = UserModel.get_by_username(username)
         if not user:
-            return {'message': 'User Not Found'}, 404
+            return {MESSAGE: "User Not Found"}, 404
         return user.json(), 200
 
     @classmethod
@@ -62,68 +52,92 @@ class User(Resource):
         claims = get_raw_jwt()
         print(claims)
         if not claims["identity"] == "admin":
-            return {"message": "Admin privilege required"}, 401
+            return {MESSAGE: "Admin privilege required"}, 401
         user = UserModel.get_by_username(username)
         if not user:
-            return {'message': 'User Not Found'}, 404
+            return {MESSAGE: "User Not Found"}, 404
         user.delete_from_db()
-        return {'message': 'User deleted.'}, 200
+        return {MESSAGE: "User deleted."}, 200
 
 
 class Lookup(Resource):
     @jwt_required
     def get(self):
         data = request.get_json()
-        if data and "username" in data and "email" in data:
-            user_by_username = UserModel.get_by_username(data["username"])
-            user_by_email = UserModel.get_by_username(data["email"])
+        if data and USERNAME in data and EMAIL in data:
+            user_by_username = UserModel.get_by_username(data[USERNAME])
+            user_by_email = UserModel.get_by_username(data[EMAIL])
             res = {
                 "username_exist": user_by_username is not None,
                 "email_exist": user_by_email is not None
             }
             return res, 200
-        return {"message": "bad request"}, 400
+        return {MESSAGE: "bad request"}, 400
 
 
-class UserFromToken(Resource):
+class UserInfo(Resource):
     @jwt_required
     def get(self):
         identity = get_jwt_identity()
         user = UserModel.get_by_username(identity)
+        if not user:
+            return {MESSAGE: "user not found"}, 400
+        oj_data = OjModel.get_by_username(identity)
         return {
-                   "username": user.username,
-                   "email": user.email
+                   USERNAME: user.username,
+                   EMAIL: user.email,
+                   OJ_INFO: oj_data.oj_info if oj_data else {}
                }, 200
+
+    @jwt_required
+    def post(self):
+        data = request.get_json()
+        identity = get_jwt_identity()
+        user = UserModel.get_by_username(identity)
+
+        if not user:
+            return {MESSAGE: "user not found"}, 400
+
+        email_user = UserModel.get_by_email(data[EMAIL])
+        if EMAIL in data and email_user and email_user != user:
+            return {MESSAGE: "email already exists"}, 400
+
+        user.update_to_mongo(data)
+
+        oj_info = OjModel.get_by_username(identity)
+        if oj_info:
+            oj_info.update_to_mongo(data)
+        return {MESSAGE: "data updated"}, 200
 
 
 class UserLogin(Resource):
     def post(self):
         data = request.get_json()
-        user = UserModel.get_by_username(data['username'])
-        if user and UserModel.login_valid_username(data["username"], data["password"]):
-            access_token = create_access_token(identity=data["username"], fresh=True)
+        user = UserModel.get_by_username(data[USERNAME])
+        if user and UserModel.login_valid_username(data[USERNAME], data[PASSWORD]):
+            access_token = create_access_token(identity=data[USERNAME], fresh=True)
             refresh_token = create_refresh_token(user.id)
             return {
-                       'access_token': access_token,
-                       'refresh_token': refresh_token
+                       "access_token": access_token,
+                       "refresh_token": refresh_token
                    }, 200
 
-        return {"message": "Invalid Credentials!"}, 401
+        return {MESSAGE: "Invalid Credentials!"}, 401
 
 
 class UserLogout(Resource):
     @jwt_required
     def post(self):
-        jti = get_raw_jwt()['jti']  # jti is "JWT ID", a unique identifier for a JWT.
+        jti = get_raw_jwt()["jti"]  # jti is "JWT ID", a unique identifier for a JWT.
         BLACKLIST.add(jti)
-        return {"message": "Successfully logged out"}, 200
+        return {MESSAGE: "Successfully logged out"}, 200
 
 
 class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
         """
-        Get a new access token without requiring username and password—only the 'refresh token'
+        Get a new access token without requiring username and password—only the "refresh token"
         provided in the /login endpoint.
 
         Note that refreshed access tokens have a `fresh=False`, which means that the user may have not
@@ -132,4 +146,4 @@ class TokenRefresh(Resource):
         """
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
-        return {'access_token': new_token}, 200
+        return {"access_token": new_token}, 200
