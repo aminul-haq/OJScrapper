@@ -19,7 +19,8 @@ CORS(app)
 
 @jwt.user_claims_loader
 def add_claims_to_jwt(identity):
-    if UserModel.get_by_username(identity).is_admin:
+    user = UserModel.get_by_username(identity)
+    if user and user.is_admin:
         return {'is_admin': True}
     return {'is_admin': False}
 
