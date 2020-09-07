@@ -35,6 +35,7 @@ api.add_resource(UserLogin, '/login')
 api.add_resource(TokenRefresh, '/refresh')
 api.add_resource(UserLogout, '/logout')
 api.add_resource(Lookup, "/lookup")
+api.add_resource(UserFromToken, "/userinfo")
 
 
 @app.before_first_request
