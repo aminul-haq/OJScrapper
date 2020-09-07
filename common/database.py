@@ -24,4 +24,4 @@ class Database(object):
 
     @staticmethod
     def update_one_set(collection, query, new_values):
-        Database.DATABASE[collection].update_one_set(query, {"$set": new_values}, upsert=True)
+        Database.DATABASE[collection].update_one(query, {"$set": new_values}, upsert=True)
