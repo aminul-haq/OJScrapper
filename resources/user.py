@@ -85,6 +85,17 @@ class Lookup(Resource):
         return {"message": "bad request"}, 400
 
 
+class UserFromToken(Resource):
+    @jwt_required
+    def get(self):
+        identity = get_jwt_identity()
+        user = UserModel.get_by_username(identity)
+        return {
+                   "username": user.username,
+                   "email": user.email
+               }, 200
+
+
 class UserLogin(Resource):
     def post(self):
         data = request.get_json()
