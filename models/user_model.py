@@ -5,6 +5,8 @@ from common.database import Database
 from flask_login import UserMixin
 from flask_bcrypt import generate_password_hash, check_password_hash
 
+COLLECTION_NAME = "users"
+
 
 class UserModel(UserMixin):
     def __init__(self, email, password, username, _id=None, is_admin=False):
@@ -16,19 +18,19 @@ class UserModel(UserMixin):
 
     @classmethod
     def get_by_email(cls, email):
-        data = Database.find_one("users", {"email": email})
+        data = Database.find_one(COLLECTION_NAME, {"email": email})
         if data is not None:
             return cls(**data)
 
     @classmethod
     def get_by_username(cls, username):
-        data = Database.find_one("users", {"username": username})
+        data = Database.find_one(COLLECTION_NAME, {"username": username})
         if data is not None:
             return cls(**data)
 
     @classmethod
     def get_by_id(cls, _id):
-        data = Database.find_one("users", {"_id": _id})
+        data = Database.find_one(COLLECTION_NAME, {"_id": _id})
         if data is not None:
             return cls(**data)
 
@@ -72,24 +74,6 @@ class UserModel(UserMixin):
     def logout():
         session['email'] = None
 
-    # def get_blogs(self):
-    #     return Blog.find_by_author_id(self._id)
-    #
-    # def new_blog(self, title, description):
-    #     blog = Blog(author=self.email,
-    #                 title=title,
-    #                 description=description,
-    #                 author_id=self._id)
-    #
-    #     blog.save_to_mongo()
-    #
-    # @staticmethod
-    # def new_post(blog_id, title, content, date=datetime.datetime.utcnow()):
-    #     blog = Blog.from_mongo(blog_id)
-    #     blog.new_post(title=title,
-    #                   content=content,
-    #                   date=date)
-
     def json(self):
         return {
             "email": self.email,
@@ -100,4 +84,18 @@ class UserModel(UserMixin):
         }
 
     def save_to_mongo(self):
-        Database.insert("users", self.json())
+        Database.insert(COLLECTION_NAME, self.json())
+
+    # def update_to_mongo(self, new_values):
+    #     Database.update_one(COLLECTION_NAME, {"username": self.username}, new_values)
+
+    def update_to_mongo(self, new_values):
+        json = self.json()
+        updated_values = {}
+        for key in new_values:
+            if key in json and key != "username":
+                if key == "password":
+                    updated_values[key] = generate_password_hash(new_values[key]).decode("utf-8")
+                else:
+                    updated_values[key] = new_values[key]
+        Database.update_one_set(COLLECTION_NAME, {"username": self.username}, updated_values)
