@@ -16,6 +16,7 @@ class UserModel(UserMixin):
         self.id = uuid.uuid4().hex if _id is None else _id
         self.first_name = first_name
         self.last_name = last_name
+        self.is_admin = is_admin
 
     @classmethod
     def get_by_email(cls, email):
