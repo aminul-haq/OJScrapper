@@ -116,7 +116,7 @@ class UserLogin(Resource):
         user = UserModel.get_by_username(data[USERNAME])
         if user and UserModel.login_valid_username(data[USERNAME], data[PASSWORD]):
             access_token = create_access_token(identity=data[USERNAME], fresh=True)
-            refresh_token = create_refresh_token(user.id)
+            refresh_token = create_refresh_token(data[USERNAME])
             return {
                        "access_token": access_token,
                        "refresh_token": refresh_token
