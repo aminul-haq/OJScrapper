@@ -9,12 +9,13 @@ COLLECTION_NAME = "users"
 
 
 class UserModel(UserMixin):
-    def __init__(self, email, password, username, _id=None, is_admin=False):
+    def __init__(self, email, password, username, first_name="", last_name="", _id=None, is_admin=False):
         self.email = email
         self.password = password
         self.username = username
         self.id = uuid.uuid4().hex if _id is None else _id
-        self.is_admin = is_admin
+        self.first_name = first_name
+        self.last_name = last_name
 
     @classmethod
     def get_by_email(cls, email):
@@ -76,9 +77,11 @@ class UserModel(UserMixin):
 
     def json(self):
         return {
-            "email": self.email,
             "_id": self.id,
             "username": self.username,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
             "password": generate_password_hash(self.password).decode("utf-8"),
             "is_admin": self.is_admin
         }
