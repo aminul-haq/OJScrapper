@@ -26,7 +26,7 @@ class UserRegister(Resource):
         if UserModel.get_by_username(data[USERNAME]):
             return {MESSAGE: "A user with that username already exists"}, 400
 
-        if UserModel.get_by_username(data[EMAIL]):
+        if UserModel.get_by_email(data[EMAIL]):
             return {MESSAGE: "A user with that email already exists"}, 400
 
         user = UserModel(**data)
