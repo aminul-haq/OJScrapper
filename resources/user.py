@@ -13,6 +13,8 @@ from models.user_model import UserModel
 from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
 
+FIRST_NAME = "first_name"
+LAST_NAME = "last_name"
 USERNAME = "username"
 EMAIL = "email"
 MESSAGE = "message"
@@ -84,6 +86,8 @@ class UserInfo(Resource):
             return {MESSAGE: "user not found"}, 400
         oj_data = OjModel.get_by_username(identity)
         return {
+                   FIRST_NAME: user.first_name,
+                   LAST_NAME: user.last_name,
                    USERNAME: user.username,
                    EMAIL: user.email,
                    OJ_INFO: oj_data.oj_info if oj_data else {}
@@ -98,9 +102,10 @@ class UserInfo(Resource):
         if not user:
             return {MESSAGE: "user not found"}, 400
 
-        email_user = UserModel.get_by_email(data[EMAIL])
-        if EMAIL in data and email_user and email_user != user:
-            return {MESSAGE: "email already exists"}, 400
+        if EMAIL in data:
+            email_user = UserModel.get_by_email(data[EMAIL])
+            if EMAIL in data and email_user and email_user != user:
+                return {MESSAGE: "email already exists"}, 400
 
         user.update_to_mongo(data)
 

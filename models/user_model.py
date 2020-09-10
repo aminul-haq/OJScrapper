@@ -95,7 +95,7 @@ class UserModel(UserMixin):
 
     def update_to_mongo(self, new_values):
         json = self.json()
-        updated_values = {}
+        updated_values = json
         for key in new_values:
             if key in json and key != "username":
                 if key == "password":
