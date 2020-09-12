@@ -21,3 +21,7 @@ oj_map = {
     "aizu": "Aizu",
     "atc": "AtCoder"
 }
+
+oj_list = ["CodeChef", "CodeForces", "Gym", "HDU", "HackerRank", "Kattis", "LightOJ", "OpenJ_Bailian", "POJ", "SGU",
+           "SPOJ", "URAL", "UVA", "UVALive", "ZOJ", "EOlymp", "HUST", "SCU", "Aizu", "AtCoder"]
+

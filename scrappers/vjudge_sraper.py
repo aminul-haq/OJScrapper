@@ -19,6 +19,21 @@ def solve_details_in_contest(contest_id, username="", user_id=""):
     return get_total_solve_in_contest(data, user_id)
 
 
+def solve_details_in_contest_from_data(data, username="", user_id=""):
+    if user_id == "":
+        user_id = get_user_id(data, username)
+    if not user_id:
+        return 0
+    return get_total_solve_in_contest(data, user_id)
+
+
+def get_contest_details_data(contest_id):
+    url = "https://vjudge.net/contest/rank/single/" + contest_id
+    response = requests.get(url)
+    data = response.json()
+    return data;
+
+
 def get_contest_name(contest_id):
     url = "https://vjudge.net/contest/rank/single/" + contest_id
     response = requests.get(url)
