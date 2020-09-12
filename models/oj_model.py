@@ -1,6 +1,7 @@
 import uuid
 from common.database import Database
 from flask_login import UserMixin
+from common.OjMap import oj_list
 
 COLLECTION_NAME = "oj_info"
 
