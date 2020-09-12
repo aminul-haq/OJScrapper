@@ -13,7 +13,6 @@ DASHBOARD_URL = "http://108.161.128.53/index.php"
 def get_session():
     session = requests.Session()
     response = session.get("http://lightoj.com/login_main.php")
-    print(response)
     cookies = session.cookies.get_dict()
     session.post("http://lightoj.com/login_check.php",
                  data={"myuserid": USERNAME,
@@ -32,7 +31,8 @@ def scrape_submission(session, user_id):
     for row in tables:
         for x in row.values.tolist():
             sub_list.extend([int(s) for s in str(x).split() if s.isdigit()])
-    print(sub_list)
+    return sub_list
+    # print(sub_list)
 
 
 def save_as_csv(sub_list, user_id):
@@ -50,6 +50,11 @@ def main():
     session = get_session()
     user_id = "25347"
     scrape_submission(session, user_id)
+
+
+def profile_details(user_id):
+    session = get_session()
+    return scrape_submission(session, user_id)
 
 
 if __name__ == '__main__':
