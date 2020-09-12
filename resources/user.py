@@ -41,6 +41,16 @@ class UserRegister(Resource):
         return {MESSAGE: "User created successfully."}, 201
 
 
+class OJUpdate(Resource):
+    @jwt_required
+    def post(self):
+        claims = get_raw_jwt()
+        print(claims)
+        if not claims["identity"] == "admin":
+            return {MESSAGE: "Admin privilege required"}, 401
+        update_all()
+
+
 class User(Resource):
     @classmethod
     def get(cls, username: str):
@@ -116,7 +126,6 @@ class UserInfo(Resource):
 
         update_one(user.username)
         return {MESSAGE: "data updated"}, 200
-
 
 
 class UserLogin(Resource):
