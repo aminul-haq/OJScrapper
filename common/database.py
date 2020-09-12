@@ -1,4 +1,5 @@
 from flask_pymongo import pymongo
+import json
 
 
 class Database(object):
@@ -19,9 +20,20 @@ class Database(object):
         return Database.DATABASE[collection].find(query)
 
     @staticmethod
+    def get_all_records(collection):
+        return list(Database.DATABASE[collection].find())
+
+    @staticmethod
     def find_one(collection, query):
         return Database.DATABASE[collection].find_one(query)
 
     @staticmethod
     def update_one_set(collection, query, new_values):
         Database.DATABASE[collection].update_one(query, {"$set": new_values}, upsert=True)
+
+
+# if __name__ == '__main__':
+#     Database.initialize()
+#     data = Database.get_all_records("users")
+#     print(data)
+#     print()

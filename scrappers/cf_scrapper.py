@@ -11,7 +11,7 @@ import re
 import json
 
 
-def scrape_data(handle):
+def profile_details(handle):
     url = "https://codeforces.com/api/user.status?handle=" + handle
     response = requests.get(url)
     data = response.json()
@@ -31,7 +31,7 @@ def reformat_accepted_solve_data(data):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     handle = "aminul"
-    data = scrape_data(handle)
+    data = profile_details(handle)
     print(data)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -2,10 +2,13 @@ import requests
 
 
 def profile_details(username):
-    url = "https://vjudge.net/user/solveDetail/" + username
-    response = requests.get(url)
-    data = response.json()
-    return data["acRecords"] if "acRecords" in data else {}
+    try:
+        url = "https://vjudge.net/user/solveDetail/" + username
+        response = requests.get(url)
+        data = response.json()
+        return data["acRecords"] if "acRecords" in data else {}
+    except:
+        return {}
 
 
 def solve_details_in_contest(contest_id, username="", user_id=""):

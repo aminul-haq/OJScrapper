@@ -12,6 +12,7 @@ from flask_jwt_extended import (
 from models.user_model import UserModel
 from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
+from common.oj_updater import update_one, update_all
 
 FIRST_NAME = "first_name"
 LAST_NAME = "last_name"
@@ -112,7 +113,10 @@ class UserInfo(Resource):
         oj_info = OjModel.get_by_username(identity)
         if oj_info:
             oj_info.update_to_mongo(data)
+
+        update_one(user.username)
         return {MESSAGE: "data updated"}, 200
+
 
 
 class UserLogin(Resource):
