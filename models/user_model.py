@@ -84,9 +84,13 @@ class UserModel(UserMixin):
             "email": self.email,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "password": generate_password_hash(self.password).decode("utf-8"),
+            "password": self.password,
             "is_admin": self.is_admin
         }
+
+    @staticmethod
+    def encrypt_password(password):
+        return generate_password_hash(password).decode("utf-8")
 
     def full_json(self):
         return json.dumps(self.__dict__)
@@ -98,7 +102,7 @@ class UserModel(UserMixin):
     #     Database.update_one(COLLECTION_NAME, {"username": self.username}, new_values)
 
     def update_to_mongo(self, new_values):
-        json = self.full_json()
+        json = self.json()
         updated_values = json
         for key in new_values:
             if key in json and key != "username":
