@@ -46,7 +46,7 @@ class OJUpdate(Resource):
     def post(self):
         claims = get_raw_jwt()
         print(claims)
-        if not claims["identity"] == "admin":
+        if claims["identity"] != "admin":
             return {MESSAGE: "Admin privilege required"}, 401
         update_all()
 
@@ -63,7 +63,6 @@ class User(Resource):
     @jwt_required
     def delete(cls, username: str):
         claims = get_raw_jwt()
-        print(claims)
         if not claims["identity"] == "admin":
             return {MESSAGE: "Admin privilege required"}, 401
         user = UserModel.get_by_username(username)
