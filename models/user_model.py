@@ -4,6 +4,7 @@ from flask import session
 from common.database import Database
 from flask_login import UserMixin
 from flask_bcrypt import generate_password_hash, check_password_hash
+import json
 
 COLLECTION_NAME = "users"
 
@@ -87,6 +88,9 @@ class UserModel(UserMixin):
             "is_admin": self.is_admin
         }
 
+    def full_json(self):
+        return json.dumps(self.__dict__)
+
     def save_to_mongo(self):
         Database.insert(COLLECTION_NAME, self.json())
 
@@ -94,7 +98,7 @@ class UserModel(UserMixin):
     #     Database.update_one(COLLECTION_NAME, {"username": self.username}, new_values)
 
     def update_to_mongo(self, new_values):
-        json = self.json()
+        json = self.full_json()
         updated_values = json
         for key in new_values:
             if key in json and key != "username":
