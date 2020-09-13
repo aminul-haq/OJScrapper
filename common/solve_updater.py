@@ -1,7 +1,9 @@
 from common.database import Database
 from models.oj_model import OjModel, COLLECTION_NAME as OJ_COLLECTION_NAME
 from models.user_model import UserModel, COLLECTION_NAME as USER_COLLECTION_NAME
-from scrappers.vjudge_sraper import profile_details as vjudge_details
+from models.bootcamp_model import BootcampModel, COLLECTION_NAME as BOOTCAMP_COLLECTION_NAME
+from models.classroom_model import ClassroomModel
+from scrappers.vjudge_sraper import profile_details as vjudge_details, solve_details_in_contest
 from scrappers.cf_scrapper import profile_details as cf_details
 from scrappers.loj_scrapper import profile_details as loj_details
 from common.OjMap import *
@@ -47,6 +49,36 @@ def update_all():
         update_one(user[USERNAME])
 
 
-# if __name__ == '__main__':
-#     Database.initialize()
-#     update_one("abir")
+def bootcamp_update_one(username):
+    user = UserModel.get_by_username(username)
+    classroom = ClassroomModel.get_by_classroom_name(user.classroom_name)
+    bootcamp = BootcampModel.get_by_username(username)
+    if not bootcamp:
+        bootcamp = BootcampModel(username=username, bootcamp_name=user.classroom_name)
+    if not classroom:
+        return
+
+    vjudge_handle = OjModel.get_by_username(username).oj_info[VJUDGE][USERNAME]
+    long_contests = []
+    for contest in classroom.vjudge_contest_list:
+        long_contests.append({
+            "contest_title": contest["contest_title"],
+            "total_problems": contest["total_problems"],
+            "solved_problems": solve_details_in_contest(contest_id=contest["contest_id"], username=vjudge_handle)
+        })
+    data = {
+        "long_contests": long_contests
+    }
+    print(data)
+    bootcamp.update_to_mongo(data)
+
+
+def bootcamp_update_all():
+    user_list = Database.get_all_records("users")
+    for user in user_list:
+        bootcamp_update_one(user[USERNAME])
+
+
+if __name__ == '__main__':
+    Database.initialize()
+    bootcamp_update_one("bashem")

@@ -1,16 +1,21 @@
+import datetime
 import uuid
+from flask import session
 from common.database import Database
 from flask_login import UserMixin
-from common.OjMap import oj_list
+from flask_bcrypt import generate_password_hash, check_password_hash
+import json
 
-COLLECTION_NAME = "oj_info"
+COLLECTION_NAME = "bootcamp"
 
 
-class OjModel(UserMixin):
-    def __init__(self, username, oj_info={}, _id=None):
+class BootcampModel(UserMixin):
+    def __init__(self, username, bootcamp_name, user_details={}, long_contests=[], _id=None):
         self.username = username
+        self.bootcamp_name = bootcamp_name
+        self.user_details = user_details
+        self.long_contests = long_contests
         self.id = uuid.uuid4().hex if _id is None else _id
-        self.oj_info = oj_info
 
     @classmethod
     def get_by_username(cls, username):
@@ -28,7 +33,9 @@ class OjModel(UserMixin):
         return {
             "_id": self.id,
             "username": self.username,
-            "oj_info": self.oj_info
+            "bootcamp_name": self.bootcamp_name,
+            "user_details": self.user_details,
+            "long_contests": self.long_contests
         }
 
     def save_to_mongo(self):

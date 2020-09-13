@@ -38,6 +38,7 @@ api.add_resource(UserLogout, '/logout')
 api.add_resource(Lookup, "/lookup")
 api.add_resource(UserInfo, "/userinfo")
 api.add_resource(OJUpdate, "/ojupdate")
+api.add_resource(Classroom, "/classroom")
 
 
 @app.before_first_request
