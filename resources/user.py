@@ -32,6 +32,7 @@ class UserRegister(Resource):
         if UserModel.get_by_email(data[EMAIL]):
             return {MESSAGE: "A user with that email already exists"}, 400
 
+        data["password"] = UserModel.encrypt_password(data["password"])
         user = UserModel(**data)
         user.save_to_mongo()
 
