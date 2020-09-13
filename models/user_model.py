@@ -10,7 +10,7 @@ COLLECTION_NAME = "users"
 
 
 class UserModel(UserMixin):
-    def __init__(self, email, password, username, first_name="", last_name="", _id=None, is_admin=False):
+    def __init__(self, email, password, username, first_name="", last_name="", _id=None, is_admin=False, classroom_name=None):
         self.email = email
         self.password = password
         self.username = username
@@ -18,6 +18,7 @@ class UserModel(UserMixin):
         self.first_name = first_name
         self.last_name = last_name
         self.is_admin = is_admin
+        self.classroom_name = classroom_name
 
     @classmethod
     def get_by_email(cls, email):
@@ -85,15 +86,13 @@ class UserModel(UserMixin):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "password": self.password,
-            "is_admin": self.is_admin
+            "is_admin": self.is_admin,
+            "classroom_name": self.classroom_name
         }
 
     @staticmethod
     def encrypt_password(password):
         return generate_password_hash(password).decode("utf-8")
-
-    def full_json(self):
-        return json.dumps(self.__dict__)
 
     def save_to_mongo(self):
         Database.insert(COLLECTION_NAME, self.json())

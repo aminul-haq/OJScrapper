@@ -10,9 +10,10 @@ from flask_jwt_extended import (
     get_raw_jwt
 )
 from models.user_model import UserModel
+from models.classroom_model import ClassroomModel
 from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
-from common.oj_updater import update_one, update_all
+from common.solve_updater import update_one, update_all
 
 FIRST_NAME = "first_name"
 LAST_NAME = "last_name"
@@ -50,6 +51,24 @@ class OJUpdate(Resource):
         if claims["identity"] != "admin":
             return {MESSAGE: "Admin privilege required"}, 401
         update_all()
+
+
+class Classroom(Resource):
+    @jwt_required
+    def get(self):
+        data = request.get_json()
+        if "classroom_name" in data:
+            classroom = ClassroomModel.get_by_classroom_name(data["classroom_name"])
+            if classroom:
+                return ClassroomModel.get_by_classroom_name(data["classroom_name"]).json(), 200
+        return {MESSAGE: "Classroom Not Found"}, 200
+
+    @jwt_required
+    def post(self):
+        data = request.get_json()
+        classroom = ClassroomModel(**data)
+        classroom.save_to_mongo()
+        return {MESSAGE: "Classroom created successfully."}, 201
 
 
 class User(Resource):
