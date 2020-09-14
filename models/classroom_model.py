@@ -44,6 +44,10 @@ class ClassroomModel(UserMixin):
         if username not in self.user_list:
             self.user_list.append(username)
 
+    @classmethod
+    def get_all_classrooms(self):
+        return Database.get_all_records(COLLECTION_NAME)
+
     def save_to_mongo(self):
         Database.insert(COLLECTION_NAME, self.json())
 

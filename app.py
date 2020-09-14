@@ -1,7 +1,8 @@
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
-from resources.user import *
+from resources.user_resource import *
+from resources.classroom_resource import *
 from common.database import Database
 from flask_cors import CORS
 
@@ -39,6 +40,7 @@ api.add_resource(Lookup, "/lookup")
 api.add_resource(UserInfo, "/userinfo")
 api.add_resource(OJUpdate, "/ojupdate")
 api.add_resource(Classroom, "/classroom")
+api.add_resource(CreateClassroom, "/createclass")
 
 
 @app.before_first_request
