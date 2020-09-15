@@ -12,6 +12,8 @@ from flask_jwt_extended import (
 
 from models.classroom_model import ClassroomModel
 from models.user_model import UserModel
+from models.student_model import StudentModel
+from common import solve_updater
 
 MESSAGE = "message"
 CLASSROOM_NAME = "classroom_name"
@@ -29,8 +31,15 @@ class CreateClassroom(Resource):
         if ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME]):
             return {MESSAGE: "A classroom with that name already exists"}, 400
         classroom = ClassroomModel(**data)
+        for username in classroom.user_list:
+            if not UserModel.get_by_username(username):
+                return {MESSAGE: "user not found"}, 404
         classroom.save_to_mongo()
-        return {MESSAGE: "User created successfully."}, 201
+        StudentModel.remove({CLASSROOM_NAME: classroom.classroom_name})
+        for username in classroom.user_list:
+            StudentModel(username, classroom.classroom_name).save_to_mongo()
+        solve_updater.update_students(classroom)
+        return {MESSAGE: "Classroom created successfully."}, 201
 
 
 class Classroom(Resource):
@@ -59,10 +68,35 @@ class Classroom(Resource):
         data = request.get_json()
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
+
         if not data or CLASSROOM_NAME not in data:
             return {MESSAGE: "invalid data"}, 400
+
         classroom = ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME])
         if not classroom:
             return {MESSAGE: "classroom not found"}, 404
+
+        for username in data["user_list"]:
+            if not UserModel.get_by_username(username):
+                return {MESSAGE: "user not found"}, 404
+
         classroom.update_to_mongo(data)
+        classroom = ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME])
+        StudentModel.remove({CLASSROOM_NAME: data[CLASSROOM_NAME]})
+        for username in classroom.user_list:
+            StudentModel(username, classroom.classroom_name).save_to_mongo()
+        solve_updater.update_students(classroom)
         return {MESSAGE: "data updated"}, 200
+
+    @jwt_required
+    def delete(self):
+        user = UserModel.get_by_username(get_jwt_identity())
+        data = request.get_json()
+        if not user.is_admin:
+            return {MESSAGE: "admin privilege required"}, 400
+
+        if not ClassroomModel.remove({CLASSROOM_NAME: data[CLASSROOM_NAME]}):
+            return {MESSAGE: "invalid data"}, 400
+        else:
+            StudentModel.remove({CLASSROOM_NAME: data[CLASSROOM_NAME]})
+            return {MESSAGE: "classroom deleted"}, 200

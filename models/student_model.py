@@ -6,13 +6,13 @@ from flask_login import UserMixin
 from flask_bcrypt import generate_password_hash, check_password_hash
 import json
 
-COLLECTION_NAME = "bootcamp"
+COLLECTION_NAME = "student"
 
 
-class BootcampModel(UserMixin):
-    def __init__(self, username, bootcamp_name, user_details={}, long_contests=[], _id=None):
+class StudentModel(UserMixin):
+    def __init__(self, username, classroom_name, user_details={}, long_contests=[], _id=None):
         self.username = username
-        self.bootcamp_name = bootcamp_name
+        self.classroom_name = classroom_name
         self.user_details = user_details
         self.long_contests = long_contests
         self.id = uuid.uuid4().hex if _id is None else _id
@@ -24,16 +24,34 @@ class BootcampModel(UserMixin):
             return cls(**data)
 
     @classmethod
+    def get_by_username_and_classroom_name(cls, username, classroom_name):
+        data = Database.find_one(COLLECTION_NAME, {"username": username, "classroom_name": classroom_name})
+        if data is not None:
+            return cls(**data)
+
+    @classmethod
     def get_by_id(cls, _id):
         data = Database.find_one(COLLECTION_NAME, {"_id": _id})
         if data is not None:
             return cls(**data)
 
+    @classmethod
+    def get_all_students(cls):
+        return Database.get_all_records(COLLECTION_NAME)
+
+    @classmethod
+    def get_all_students(cls, query):
+        return Database.get_all_records(COLLECTION_NAME, query)
+
+    @classmethod
+    def remove(self, query):
+        return Database.remove(COLLECTION_NAME, query)
+
     def json(self):
         return {
             "_id": self.id,
             "username": self.username,
-            "bootcamp_name": self.bootcamp_name,
+            "classroom_name": self.classroom_name,
             "user_details": self.user_details,
             "long_contests": self.long_contests
         }

@@ -45,8 +45,12 @@ class ClassroomModel(UserMixin):
             self.user_list.append(username)
 
     @classmethod
-    def get_all_classrooms(self):
+    def get_all_classrooms(cls):
         return Database.get_all_records(COLLECTION_NAME)
+
+    @classmethod
+    def remove(cls, query):
+        return Database.remove(COLLECTION_NAME, query)
 
     def save_to_mongo(self):
         Database.insert(COLLECTION_NAME, self.json())
@@ -57,5 +61,4 @@ class ClassroomModel(UserMixin):
         for key in new_values:
             if key in json and key != "classroom_name":
                 updated_values[key] = new_values[key]
-        print(updated_values)
         Database.update_one_set(COLLECTION_NAME, {"classroom_name": self.classroom_name}, updated_values)

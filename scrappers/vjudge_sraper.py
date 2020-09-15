@@ -34,7 +34,7 @@ def get_contest_details_data(contest_id):
     url = "https://vjudge.net/contest/rank/single/" + contest_id
     response = requests.get(url)
     data = response.json()
-    return data;
+    return data
 
 
 def get_contest_name(contest_id):

@@ -26,6 +26,6 @@ def solve(file_1, file_2):
 
 
 if __name__ == '__main__':
-    file_1 = "output/rank_list_04-09-2020.csv"
-    file_2 = "output/rank_list_28-08-2020.csv"
+    file_1 = "output/rank_list_12-09-2020.csv"
+    file_2 = "output/rank_list_14_08_2020.csv"
     solve(file_1, file_2)
