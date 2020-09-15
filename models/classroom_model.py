@@ -55,7 +55,7 @@ class ClassroomModel(UserMixin):
         json = self.json()
         updated_values = json
         for key in new_values:
-            if key in json and key != "username":
+            if key in json and key != "classroom_name":
                 updated_values[key] = new_values[key]
         print(updated_values)
-        Database.update_one_set(COLLECTION_NAME, {"username": self.username}, updated_values)
+        Database.update_one_set(COLLECTION_NAME, {"classroom_name": self.classroom_name}, updated_values)
