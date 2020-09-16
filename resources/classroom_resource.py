@@ -49,7 +49,7 @@ class CreateClassroom(Resource):
 
 class Classroom(Resource):
     @jwt_required
-    def get(self):
+    def post(self):
         user = UserModel.get_by_username(get_jwt_identity())
         data = request.get_json()
         if not data or data == {}:
@@ -68,7 +68,7 @@ class Classroom(Resource):
             return {MESSAGE: "invalid data"}, 400
 
     @jwt_required
-    def post(self):
+    def put(self):
         user = UserModel.get_by_username(get_jwt_identity())
         data = request.get_json()
         if not user.is_admin:
