@@ -45,8 +45,8 @@ class ClassroomModel(UserMixin):
             self.user_list.append(username)
 
     @classmethod
-    def get_all_classrooms(cls):
-        return Database.get_all_records(COLLECTION_NAME)
+    def get_all_classrooms(cls, query={}):
+        return Database.get_all_records(COLLECTION_NAME, query)
 
     @classmethod
     def remove(cls, query):

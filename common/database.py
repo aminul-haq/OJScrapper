@@ -32,12 +32,9 @@ class Database(object):
         return Database.DATABASE[collection].remove_one(query)
 
     @staticmethod
-    def get_all_records(collection):
-        return list(Database.DATABASE[collection].find())
-
-    @staticmethod
-    def get_all_records(collection, query):
+    def get_all_records(collection, query={}):
         return list(Database.DATABASE[collection].find(query))
+
 
     @staticmethod
     def update_one_set(collection, query, new_values):

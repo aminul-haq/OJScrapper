@@ -36,11 +36,7 @@ class StudentModel(UserMixin):
             return cls(**data)
 
     @classmethod
-    def get_all_students(cls):
-        return Database.get_all_records(COLLECTION_NAME)
-
-    @classmethod
-    def get_all_students(cls, query):
+    def get_all_students(cls, query={}):
         return Database.get_all_records(COLLECTION_NAME, query)
 
     @classmethod
