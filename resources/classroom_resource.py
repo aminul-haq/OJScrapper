@@ -9,6 +9,7 @@ from flask_jwt_extended import (
     jwt_required,
     get_raw_jwt
 )
+import threading
 
 from models.classroom_model import ClassroomModel
 from models.user_model import UserModel
@@ -17,6 +18,13 @@ from common import solve_updater
 
 MESSAGE = "message"
 CLASSROOM_NAME = "classroom_name"
+
+
+def update_students(classroom):
+    StudentModel.remove({CLASSROOM_NAME: classroom.classroom_name})
+    for username in classroom.user_list:
+        StudentModel(username, classroom.classroom_name).save_to_mongo()
+    solve_updater.update_students(classroom)
 
 
 class CreateClassroom(Resource):
@@ -35,10 +43,7 @@ class CreateClassroom(Resource):
             if not UserModel.get_by_username(username):
                 return {MESSAGE: "user not found"}, 404
         classroom.save_to_mongo()
-        StudentModel.remove({CLASSROOM_NAME: classroom.classroom_name})
-        for username in classroom.user_list:
-            StudentModel(username, classroom.classroom_name).save_to_mongo()
-        solve_updater.update_students(classroom)
+        threading.Thread(target=update_students, args=[classroom]).start()
         return {MESSAGE: "Classroom created successfully."}, 201
 
 
@@ -82,10 +87,7 @@ class Classroom(Resource):
 
         classroom.update_to_mongo(data)
         classroom = ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME])
-        StudentModel.remove({CLASSROOM_NAME: data[CLASSROOM_NAME]})
-        for username in classroom.user_list:
-            StudentModel(username, classroom.classroom_name).save_to_mongo()
-        solve_updater.update_students(classroom)
+        threading.Thread(target=update_students, args=[classroom]).start()
         return {MESSAGE: "data updated"}, 200
 
     @jwt_required
