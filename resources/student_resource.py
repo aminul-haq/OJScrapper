@@ -21,7 +21,7 @@ USERNAME = "username"
 
 class Student(Resource):
     @jwt_required
-    def get(self):
+    def post(self):
         data = request.get_json()
         student = StudentModel.get_all_students(data)
         if not student:
@@ -29,7 +29,7 @@ class Student(Resource):
         return student, 200
 
     @jwt_required
-    def post(self):
+    def put(self):
         user = UserModel.get_by_username(get_jwt_identity())
         data = request.get_json()
         if not user.is_admin:
