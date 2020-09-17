@@ -69,7 +69,7 @@ class User(Resource):
 
     @classmethod
     @jwt_required
-    def delete(cls, username: str):
+    def delete(cls):
         user = UserModel.get_by_username(get_jwt_identity())
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
