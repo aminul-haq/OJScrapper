@@ -10,7 +10,8 @@ COLLECTION_NAME = "users"
 
 
 class UserModel(UserMixin):
-    def __init__(self, email, password, username, first_name="", last_name="", _id=None, is_admin=False, classroom_name=None):
+    def __init__(self, email, password, username, first_name="", last_name="", _id=None, is_admin=False,
+                 classroom_name=None):
         self.email = email
         self.password = password
         self.username = username
@@ -37,6 +38,10 @@ class UserModel(UserMixin):
         data = Database.find_one(COLLECTION_NAME, {"_id": _id})
         if data is not None:
             return cls(**data)
+
+    @classmethod
+    def get_all_users(cls, query={}):
+        return Database.get_all_records(COLLECTION_NAME, query)
 
     @staticmethod
     def login_valid_email(email, password):

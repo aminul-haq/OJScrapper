@@ -31,8 +31,8 @@ def update_students(classroom):
 class CreateClassroom(Resource):
     @jwt_required
     def post(self):
-        user = UserModel.get_by_username(get_jwt_identity())
         data = request.get_json()
+        user = UserModel.get_by_username(get_jwt_identity())
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
         if not data or CLASSROOM_NAME not in data:
@@ -120,4 +120,4 @@ class ClassRankList(Resource):
         #vjudge_contest_list = [x["contest_id"] for x in vjudge_contest_list]
         start_time = data["start_time"] if "start_time" in data else -INF
         end_time = data["end_time"] if "end_time" in data else INF
-        return solve_updater.get_rank_list(user_list, vjudge_contest_list, start_time, end_time), 200
+        return solve_updater.get_rank_list_live(user_list, vjudge_contest_list, start_time, end_time), 200

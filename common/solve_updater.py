@@ -9,8 +9,10 @@ from scrappers.loj_scrapper import profile_details as loj_details
 from scrappers import vjudge_sraper
 from common.OjMap import *
 
+INF = 2 ** 100
 
-def update_one(username):
+
+def update_user_with_username(username):
     user = OjModel.get_by_username(username)
     oj_profiles = user.oj_info
     try:
@@ -47,7 +49,7 @@ def update_json(oj_profiles, oj_name, arg):
 def update_all():
     user_list = Database.get_all_records("users")
     for user in user_list:
-        update_one(user[USERNAME])
+        update_user_with_username(user[USERNAME])
 
 
 def bootcamp_update_one(username):
@@ -111,11 +113,14 @@ def update_students(classroom):
         student.update_to_mongo(new_values)
 
 
-def get_rank_list(user_list, contest_list, start_time, end_time):
+def get_rank_list_live(user_list, contest_list, start_time, end_time, contest_data=None):
     header = ["username"]
     data_map = {}
     for contest in contest_list:
-        data = vjudge_sraper.get_contest_details_data(contest["contest_id"])
+        if contest_data:
+            data = contest_data[contest["contest_id"]]
+        else:
+            data = vjudge_sraper.get_contest_details_data(contest["contest_id"])
         data_map[contest["contest_id"]] = data
         header.append(vjudge_sraper.get_contest_name_from_data(data))
     header.append("Total Solve")
@@ -144,6 +149,12 @@ def get_rank_list(user_list, contest_list, start_time, end_time):
     rank_list = sorted(rank_list, key=lambda row: row[len(row) - 1], reverse=True)
     rank_list.insert(0, header)
     return rank_list
+
+
+# def update_contest_data():
+#     classroom_list = ClassroomModel.get_all_classrooms()
+#     contest_data = {}
+#     for classroom in classroom_list:
 
 
 if __name__ == '__main__':
