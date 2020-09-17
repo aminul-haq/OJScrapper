@@ -43,6 +43,7 @@ api.add_resource(OJUpdate, "/ojupdate")
 api.add_resource(Classroom, "/classroom")
 api.add_resource(CreateClassroom, "/createclass")
 api.add_resource(Student, "/student")
+api.add_resource(ClassRankList, "/classrank")
 
 
 @app.before_first_request

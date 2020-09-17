@@ -18,6 +18,7 @@ from common import solve_updater
 
 MESSAGE = "message"
 CLASSROOM_NAME = "classroom_name"
+INF = 2 ** 100
 
 
 def update_students(classroom):
@@ -102,3 +103,21 @@ class Classroom(Resource):
         else:
             StudentModel.remove({CLASSROOM_NAME: data[CLASSROOM_NAME]})
             return {MESSAGE: "classroom deleted"}, 200
+
+
+class ClassRankList(Resource):
+    @jwt_required
+    def post(self):
+        data = request.get_json()
+        if CLASSROOM_NAME not in data:
+            return {MESSAGE: "invalid data"}, 400
+        classroom = ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME])
+        user_list = classroom.user_list
+        vjudge_contest_list = classroom.vjudge_contest_list
+        if "contest_type" in data and data["contest_type"] != "all":
+            vjudge_contest_list = filter(lambda contest: contest["contest_type"] == data["contest_type"],
+                                         vjudge_contest_list)
+        #vjudge_contest_list = [x["contest_id"] for x in vjudge_contest_list]
+        start_time = data["start_time"] if "start_time" in data else -INF
+        end_time = data["end_time"] if "end_time" in data else INF
+        return solve_updater.get_rank_list(user_list, vjudge_contest_list, start_time, end_time), 200

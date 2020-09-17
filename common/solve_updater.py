@@ -111,6 +111,41 @@ def update_students(classroom):
         student.update_to_mongo(new_values)
 
 
+def get_rank_list(user_list, contest_list, start_time, end_time):
+    header = ["username"]
+    data_map = {}
+    for contest in contest_list:
+        data = vjudge_sraper.get_contest_details_data(contest["contest_id"])
+        data_map[contest["contest_id"]] = data
+        header.append(vjudge_sraper.get_contest_name_from_data(data))
+    header.append("Total Solve")
+
+    rank_list = []
+    for username in user_list:
+        vjudge_handle = None
+        solve_list = [username]
+        total_solve = 0
+        try:
+            vjudge_handle = OjModel.get_by_username(username).oj_info[VJUDGE][USERNAME]
+        except:
+            continue
+        for contest in contest_list:
+            solve_count = vjudge_sraper.solve_details_in_contest_from_data_with_timestamp(
+                data=data_map[contest["contest_id"]],
+                username=vjudge_handle,
+                end_time=end_time,
+                start_time=start_time
+            )
+            total_solve += solve_count
+            solve_list.append(int(solve_count))
+        solve_list.append(total_solve)
+        rank_list.append(solve_list)
+
+    rank_list = sorted(rank_list, key=lambda row: row[len(row) - 1], reverse=True)
+    rank_list.insert(0, header)
+    return rank_list
+
+
 if __name__ == '__main__':
     Database.initialize()
     bootcamp_update_one("bashem")
