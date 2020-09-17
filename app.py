@@ -12,7 +12,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['JWT_BLACKLIST_ENABLED'] = True  # enable blacklist feature
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']  # allow blacklisting for access and refresh tokens
+app.config["JWT_ACCESS_TOKEN_EXPIRES_MINUTES"] = 1440
 app.secret_key = "abcdxyz"
+
 
 api = Api(app)
 jwt = JWTManager(app)
