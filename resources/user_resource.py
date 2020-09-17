@@ -1,3 +1,5 @@
+import datetime
+
 from flask_restful import Resource, reqparse
 from flask import request
 from werkzeug.security import safe_str_cmp
@@ -92,10 +94,10 @@ class User(Resource):
                 oj_data = OjModel.get_by_username(user[USERNAME])
                 user_list.append(
                     {
-                        FIRST_NAME: user.first_name,
-                        LAST_NAME: user.last_name,
-                        USERNAME: user.username,
-                        EMAIL: user.email,
+                        FIRST_NAME: user[FIRST_NAME],
+                        LAST_NAME: user[LAST_NAME],
+                        USERNAME: user[USERNAME],
+                        EMAIL: user[EMAIL],
                         OJ_INFO: oj_data.oj_info if oj_data else {}
                     }
                 )
@@ -197,7 +199,8 @@ class UserLogin(Resource):
         data = request.get_json()
         user = UserModel.get_by_username(data[USERNAME])
         if user and UserModel.login_valid_username(data[USERNAME], data[PASSWORD]):
-            access_token = create_access_token(identity=data[USERNAME], fresh=True)
+            expires = datetime.timedelta(days=7)
+            access_token = create_access_token(identity=data[USERNAME], fresh=True, expires_delta=expires)
             refresh_token = create_refresh_token(data[USERNAME])
             return {
                        "access_token": access_token,
