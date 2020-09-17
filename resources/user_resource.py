@@ -73,7 +73,8 @@ class User(Resource):
         user = UserModel.get_by_username(get_jwt_identity())
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
-        user = UserModel.get_by_username(username)
+        data = request.get_json()
+        user = UserModel.get_by_username(data[USERNAME])
         if not user:
             return {MESSAGE: "User Not Found"}, 404
         user.delete_from_db()
