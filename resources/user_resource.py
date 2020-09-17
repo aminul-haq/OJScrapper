@@ -13,7 +13,7 @@ from models.user_model import UserModel
 from models.classroom_model import ClassroomModel
 from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
-from common.solve_updater import update_one, update_all
+from common.solve_updater import update_user_with_username, update_all
 
 FIRST_NAME = "first_name"
 LAST_NAME = "last_name"
@@ -53,38 +53,26 @@ class OJUpdate(Resource):
         update_all()
 
 
-# class Classroom(Resource):
-#     @jwt_required
-#     def get(self):
-#         data = request.get_json()
-#         if "classroom_name" in data:
-#             classroom = ClassroomModel.get_by_classroom_name(data["classroom_name"])
-#             if classroom:
-#                 return ClassroomModel.get_by_classroom_name(data["classroom_name"]).json(), 200
-#         return {MESSAGE: "Classroom Not Found"}, 200
-#
-#     @jwt_required
-#     def post(self):
-#         data = request.get_json()
-#         classroom = ClassroomModel(**data)
-#         classroom.save_to_mongo()
-#         return {MESSAGE: "Classroom created successfully."}, 201
-
-
 class User(Resource):
     @classmethod
-    def get(cls, username: str):
-        user = UserModel.get_by_username(username)
-        if not user:
-            return {MESSAGE: "User Not Found"}, 404
-        return user.json(), 200
+    def get(cls):
+        data = request.get_json()
+        if data and USERNAME in data:
+            user = UserModel.get_by_username(data[USERNAME])
+            if not user:
+                return {MESSAGE: "User Not Found"}, 404
+            else:
+                return user.json(), 200
+        else:
+            user_list = UserModel.get_all_users();
+            return user_list, 200
 
     @classmethod
     @jwt_required
     def delete(cls, username: str):
-        claims = get_raw_jwt()
-        if not claims["identity"] == "admin":
-            return {MESSAGE: "Admin privilege required"}, 401
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user.is_admin:
+            return {MESSAGE: "admin privilege required"}, 400
         user = UserModel.get_by_username(username)
         if not user:
             return {MESSAGE: "User Not Found"}, 404
@@ -143,7 +131,7 @@ class UserInfo(Resource):
         if oj_info:
             oj_info.update_to_mongo(data)
 
-        update_one(user.username)
+        update_user_with_username(user.username)
         return {MESSAGE: "data updated"}, 200
 
 
