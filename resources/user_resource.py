@@ -89,7 +89,7 @@ class User(Resource):
         else:
             user_list = []
             for user in UserModel.get_all_users():
-                oj_data = OjModel.get_by_username(user.username)
+                oj_data = OjModel.get_by_username(user[USERNAME])
                 user_list.append(
                     {
                         FIRST_NAME: user.first_name,
