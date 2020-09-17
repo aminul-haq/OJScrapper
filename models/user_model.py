@@ -115,3 +115,6 @@ class UserModel(UserMixin):
                 else:
                     updated_values[key] = new_values[key]
         Database.update_one_set(COLLECTION_NAME, {"username": self.username}, updated_values)
+
+    def delete_from_db(self):
+        Database.remove(COLLECTION_NAME, {"username": self.username})
