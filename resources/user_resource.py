@@ -54,20 +54,76 @@ class OJUpdate(Resource):
 
 
 class User(Resource):
-    @classmethod
-    def get(cls):
+    @jwt_required
+    def get(self):
+        identity = get_jwt_identity()
+        user = UserModel.get_by_username(identity)
+        if not user:
+            return {MESSAGE: "user not found"}, 400
+        oj_data = OjModel.get_by_username(identity)
+        return {
+                   FIRST_NAME: user.first_name,
+                   LAST_NAME: user.last_name,
+                   USERNAME: user.username,
+                   EMAIL: user.email,
+                   OJ_INFO: oj_data.oj_info if oj_data else {}
+               }, 200
+
+    @jwt_required
+    def post(cls):
         data = request.get_json()
         if data and USERNAME in data:
             user = UserModel.get_by_username(data[USERNAME])
+            oj_data = OjModel.get_by_username(data[USERNAME])
             if not user:
                 return {MESSAGE: "User Not Found"}, 404
             else:
-                return user.json(), 200
+                return {
+                           FIRST_NAME: user.first_name,
+                           LAST_NAME: user.last_name,
+                           USERNAME: user.username,
+                           EMAIL: user.email,
+                           OJ_INFO: oj_data.oj_info if oj_data else {}
+                       }, 200
+
         else:
-            user_list = UserModel.get_all_users();
+            user_list = []
+            for user in UserModel.get_all_users():
+                oj_data = OjModel.get_by_username(user.username)
+                user_list.append(
+                    {
+                        FIRST_NAME: user.first_name,
+                        LAST_NAME: user.last_name,
+                        USERNAME: user.username,
+                        EMAIL: user.email,
+                        OJ_INFO: oj_data.oj_info if oj_data else {}
+                    }
+                )
             return user_list, 200
 
-    @classmethod
+    @jwt_required
+    def put(self):
+        data = request.get_json()
+        identity = get_jwt_identity()
+        user = UserModel.get_by_username(identity)
+
+        if not user:
+            return {MESSAGE: "user not found"}, 400
+
+        if EMAIL in data:
+            email_user = UserModel.get_by_email(data[EMAIL])
+            if EMAIL in data and email_user and email_user != user:
+                return {MESSAGE: "email already exists"}, 400
+
+        user.update_to_mongo(data)
+
+        oj_info = OjModel.get_by_username(identity)
+        if oj_info:
+            oj_info.update_to_mongo(data)
+
+        update_user_with_username(user.username)
+        return {MESSAGE: "data updated"}, 200
+
     @jwt_required
     def delete(cls):
         user = UserModel.get_by_username(get_jwt_identity())
