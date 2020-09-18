@@ -1,3 +1,5 @@
+import datetime
+import json
 from common.database import Database
 from models.oj_model import OjModel, COLLECTION_NAME as OJ_COLLECTION_NAME
 from models.user_model import UserModel, COLLECTION_NAME as USER_COLLECTION_NAME
@@ -10,6 +12,7 @@ from scrappers import vjudge_sraper
 from common.OjMap import *
 
 INF = 2 ** 100
+CONTEST_ID = "contest_id"
 
 
 def update_user_with_username(username):
@@ -68,7 +71,7 @@ def bootcamp_update_one(username):
             "contest_title": contest["contest_title"],
             "total_problems": contest["total_problems"],
             "minimum_solve_required": contest["minimum_solve_required"],
-            "solved_problems": solve_details_in_contest(contest_id=contest["contest_id"], username=vjudge_handle)
+            "solved_problems": solve_details_in_contest(contest_id=contest[CONTEST_ID], username=vjudge_handle)
         })
     data = {
         "long_contests": long_contests
@@ -86,7 +89,7 @@ def bootcamp_update_all():
 def update_students(classroom):
     data_map = {}
     for contest in classroom.vjudge_contest_list:
-        data_map[contest["contest_id"]] = vjudge_sraper.get_contest_details_data(contest["contest_id"])
+        data_map[contest[CONTEST_ID]] = vjudge_sraper.get_contest_details_data(contest[CONTEST_ID])
     for username in classroom.user_list:
         vjudge_handle = None
         try:
@@ -102,7 +105,7 @@ def update_students(classroom):
                     "total_problems": contest["total_problems"],
                     "minimum_solve_required": contest["minimum_solve_required"],
                     "solved_problems": vjudge_sraper.solve_details_in_contest_from_data(
-                        data=data_map[contest["contest_id"]],
+                        data=data_map[contest[CONTEST_ID]],
                         username=vjudge_handle),
                     "contest_type": contest["contest_type"]
                 }
@@ -117,11 +120,11 @@ def get_rank_list_live(user_list, contest_list, start_time, end_time, contest_da
     header = ["username"]
     data_map = {}
     for contest in contest_list:
-        if contest_data:
-            data = contest_data[contest["contest_id"]]
+        if contest_data and contest[CONTEST_ID] in contest_data:
+            data = contest_data[contest[CONTEST_ID]]
         else:
-            data = vjudge_sraper.get_contest_details_data(contest["contest_id"])
-        data_map[contest["contest_id"]] = data
+            data = vjudge_sraper.get_contest_details_data(contest[CONTEST_ID])
+        data_map[contest[CONTEST_ID]] = data
         header.append(vjudge_sraper.get_contest_name_from_data(data))
     header.append("Total Solve")
 
@@ -136,7 +139,7 @@ def get_rank_list_live(user_list, contest_list, start_time, end_time, contest_da
             continue
         for contest in contest_list:
             solve_count = vjudge_sraper.solve_details_in_contest_from_data_with_timestamp(
-                data=data_map[contest["contest_id"]],
+                data=data_map[contest[CONTEST_ID]],
                 username=vjudge_handle,
                 end_time=end_time,
                 start_time=start_time
@@ -151,12 +154,89 @@ def get_rank_list_live(user_list, contest_list, start_time, end_time, contest_da
     return rank_list
 
 
-# def update_contest_data():
-#     classroom_list = ClassroomModel.get_all_classrooms()
-#     contest_data = {}
-#     for classroom in classroom_list:
+def update_contest_data():
+    classroom_list = ClassroomModel.get_all_classrooms()
+    contest_id_set = set()
+    for classroom in classroom_list:
+        for contest in classroom["vjudge_contest_list"]:
+            contest_id_set.add(contest[CONTEST_ID])
+
+    print(contest_id_set)
+    contest_data = {}
+    for contest_id in contest_id_set:
+        contest_data[contest_id] = vjudge_sraper.get_contest_details_data(contest_id)
+    json_data = {
+        "name": "vjudge_contest_data",
+        "updated_on": datetime.datetime.today().timestamp(),
+        "data": contest_data
+    }
+    Database.remove("contest_data", {})
+    Database.insert("contest_data", json_data)
+
+
+def update_contest_data_formatted():
+    classroom_list = ClassroomModel.get_all_classrooms()
+    contest_id_set = set()
+    for classroom in classroom_list:
+        for contest in classroom["vjudge_contest_list"]:
+            contest_id_set.add(contest[CONTEST_ID])
+    contest_data = {}
+    for contest_id in contest_id_set:
+        contest_data[contest_id] = vjudge_sraper.get_contest_details_data_formatted(contest_id)
+    json_data = {
+        "name": "vjudge_contest_data",
+        "updated_on": datetime.datetime.today().timestamp(),
+        "data": contest_data
+    }
+    Database.remove("contest_data", {})
+    Database.insert("contest_data", json_data)
+
+
+def count_in_range(values, low, high):
+    cnt = 0;
+    for val in values:
+        if low <= val[1] <= high:
+            cnt = cnt + 1
+    return cnt
+
+
+def get_rank_list_from_db(user_list, contest_list, start_time, end_time):
+    contest_data = Database.find_one("contest_data", {"name": "vjudge_contest_data"})
+    header = ["username"]
+    data_map = contest_data["data"]
+    for contest in contest_list:
+        if contest[CONTEST_ID] in data_map:
+            header.append(data_map[contest[CONTEST_ID]]["title"])
+        else:
+            header.append(contest[CONTEST_ID])
+
+    header.append("Total Solve")
+
+    rank_list = []
+    for username in user_list:
+        solve_list = [username]
+        total_solve = 0
+        try:
+            vjudge_handle = OjModel.get_by_username(username).oj_info[VJUDGE][USERNAME]
+        except:
+            continue
+        for contest in contest_list:
+            if contest[CONTEST_ID] in data_map and vjudge_handle in data_map[contest[CONTEST_ID]]["submission"]:
+                solve_count = count_in_range(data_map[contest[CONTEST_ID]]["submission"][vjudge_handle], start_time,
+                                             end_time)
+            else:
+                solve_count = 0
+            total_solve += solve_count
+            solve_list.append(int(solve_count))
+        solve_list.append(total_solve)
+        rank_list.append(solve_list)
+
+    rank_list = sorted(rank_list, key=lambda row: row[len(row) - 1], reverse=True)
+    rank_list.insert(0, header)
+    return rank_list
 
 
 if __name__ == '__main__':
     Database.initialize()
-    bootcamp_update_one("bashem")
+    # bootcamp_update_one("bashem")
+    update_contest_data_formatted()
