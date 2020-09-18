@@ -1,3 +1,5 @@
+import json
+
 from flask_restful import Resource, reqparse
 from flask import request
 from werkzeug.security import safe_str_cmp
@@ -13,6 +15,7 @@ import threading
 
 from models.classroom_model import ClassroomModel
 from models.user_model import UserModel
+from models.oj_model import OjModel
 from models.student_model import StudentModel
 from common import solve_updater
 
@@ -26,6 +29,7 @@ def update_students(classroom):
     for username in classroom.user_list:
         StudentModel(username, classroom.classroom_name).save_to_mongo()
     solve_updater.update_students(classroom)
+    solve_updater.update_contest_data_formatted()
 
 
 class CreateClassroom(Resource):
@@ -39,10 +43,22 @@ class CreateClassroom(Resource):
             return {MESSAGE: "invalid data"}, 400
         if ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME]):
             return {MESSAGE: "A classroom with that name already exists"}, 400
-        classroom = ClassroomModel(**data)
-        for username in classroom.user_list:
-            if not UserModel.get_by_username(username):
+
+        vjudge_username = {}
+        for username in data["user_list"]:
+            user = UserModel.get_by_username(username)
+            if not user:
                 return {MESSAGE: "user not found"}, 404
+            try:
+                vjudge_handle = OjModel.get_by_username(username).oj_info["VJudge"]["username"]
+            except:
+                continue
+            vjudge_username[username] = vjudge_handle
+
+        data["user_details"] = {
+            "vjudge_username": vjudge_username
+        }
+        classroom = ClassroomModel(**data)
         classroom.save_to_mongo()
         threading.Thread(target=update_students, args=[classroom]).start()
         return {MESSAGE: "Classroom created successfully."}, 201
@@ -82,10 +98,20 @@ class Classroom(Resource):
         if not classroom:
             return {MESSAGE: "classroom not found"}, 404
 
+        vjudge_username = {}
         for username in data["user_list"]:
-            if not UserModel.get_by_username(username):
+            user = UserModel.get_by_username(username)
+            if not user:
                 return {MESSAGE: "user not found"}, 404
+            try:
+                vjudge_handle = OjModel.get_by_username(username).oj_info["VJudge"]["username"]
+            except:
+                continue
+            vjudge_username[username] = vjudge_handle
 
+        data["user_details"] = {
+            "vjudge_username": vjudge_username
+        }
         classroom.update_to_mongo(data)
         classroom = ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME])
         threading.Thread(target=update_students, args=[classroom]).start()
@@ -117,7 +143,7 @@ class ClassRankList(Resource):
         if "contest_type" in data and data["contest_type"] != "all":
             vjudge_contest_list = filter(lambda contest: contest["contest_type"] == data["contest_type"],
                                          vjudge_contest_list)
-        #vjudge_contest_list = [x["contest_id"] for x in vjudge_contest_list]
+        # vjudge_contest_list = [x["contest_id"] for x in vjudge_contest_list]
         start_time = data["start_time"] if "start_time" in data else -INF
         end_time = data["end_time"] if "end_time" in data else INF
-        return solve_updater.get_rank_list_live(user_list, vjudge_contest_list, start_time, end_time), 200
+        return solve_updater.get_rank_list_from_db(user_list, vjudge_contest_list, start_time, end_time), 200
