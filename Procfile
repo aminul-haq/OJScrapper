@@ -1,1 +1,1 @@
-web: uwsgi --bind 0.0.0.0:$PORT app:app
+web: uwsgi uwsgi.ini
