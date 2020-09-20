@@ -52,5 +52,10 @@ def initialize_database():
     Database.initialize()
 
 
+@app.route("/")
+def home():
+    return "Hello", 200
+
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
