@@ -54,7 +54,7 @@ def initialize_database():
 
 @app.route("/")
 def home():
-    return "Hello", 200
+    return "Hello", 201
 
 
 if __name__ == '__main__':
