@@ -8,7 +8,7 @@ def solve_details(handle):
     url = "https://vjudge.net/user/solveDetail/" + handle
     response = requests.get(url)
     # soup = BeautifulSoup(response.text, "html.parser")
-    solve_data = json.loads(response.text)
+    solve_data = response.json()
     print(solve_data)
     return solve_data;
     # return solve_data

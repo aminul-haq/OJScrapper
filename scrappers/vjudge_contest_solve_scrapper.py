@@ -9,6 +9,7 @@ import datetime
 from bs4 import BeautifulSoup
 import csv
 import json
+from scrappers.vjudge_sraper import *
 
 url_format = "https://vjudge.net/status/data/?start=%d&length=20&res=1&inContest=true&contestId=%s"
 url_contest_info = "https://vjudge.net/contest/rank/single/%s"
@@ -17,15 +18,13 @@ url_contest_info = "https://vjudge.net/contest/rank/single/%s"
 # url = "https://vjudge.net/status/data/?start=0&length=20&res=1&inContest=true&contestId=389090"
 
 
-def scrape_data(contest_id, users_map, output_list, total_solve):
-    solve_map = get_solve_map(contest_id)
+def scrape_data_updated(contest_id, users_map, output_list, total_solve):
+    # solve_map = get_solve_map(contest_id)
     contest_name = get_contest_name(contest_id)
     output_list[0].append(contest_name)
+    data = get_contest_details_data(contest_id)
     for user in users_map:
-        user = user.rstrip()
-        solves = 0
-        if user in solve_map:
-            solves = len(solve_map[user])
+        solves = solve_details_in_contest_from_data(data=data, username=user)
         id = users_map[user]
         output_list[id].append(solves)
         total_solve[id] = total_solve[id] + solves
@@ -40,6 +39,20 @@ def get_contest_name(contest_id):
         return "ERROR! Contest not found"
     return contest_data["title"]
 
+
+"""
+def scrape_data(contest_id, users_map, output_list, total_solve):
+    solve_map = get_solve_map(contest_id)
+    contest_name = get_contest_name(contest_id)
+    output_list[0].append(contest_name)
+    for user in users_map:
+        user = user.rstrip()
+        solves = 0
+        if user in solve_map:
+            solves = len(solve_map[user])
+        id = users_map[user]
+        output_list[id].append(solves)
+        total_solve[id] = total_solve[id] + solves
 
 def get_solve_map(contest_id):
     map = {}
@@ -66,6 +79,7 @@ def get_solve_map(contest_id):
                     except:
                         continue
     return map
+"""
 
 
 def get_handles_list():
@@ -73,7 +87,7 @@ def get_handles_list():
                "Wasi00007", "trk111", "NadmanKhan", "Moumi_", "toufique525", "2011046642_Opy", "vedistaan",
                "TaneemAhmed", "maxim_v2", "Fahimmanowar", "Junayed_Hasan", "maruf22", "Jushraf", "RifatXia",
                "Rejuana", "omi_farhan75", "OmarHaroon", "Tajreean_Ahmed", "Tayeb183", "Simanta_Mostafa", "MaishaAmin",
-               "arman39", "Lamia_Munira", "Ahamed_TJ", "ripcode", "Sunjaree", "ms166", "Antony_Wu"]
+               "arman39", "Lamia_Munira", "ripcode", "Sunjaree", "ms166", "Antony_Wu"]
     return handles
 
 
@@ -89,13 +103,12 @@ def get_handles_map():
 def get_contest_list():
     contest_list = ["372404", "372405", "378225", "378794", "379026", "379283", "379286", "380051", "380795", "381124",
                     "382198", "382422", "383685", "384879", "384978", "387764", "388040", "389090", "388035", "388036",
-                    "390274", "391153"]
+                    "390274", "391153", "392483", "393716", "395244"]
     # contest_list = ["389090"]
     return contest_list
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+def main():
     handles_list = get_handles_list()
     handles_map = get_handles_map()
     contest_list = get_contest_list()
@@ -105,7 +118,7 @@ if __name__ == '__main__':
         output_list.append([user])
     print(output_list)
     for contest_id in contest_list:
-        scrape_data(contest_id, handles_map, output_list, total_solve)
+        scrape_data_updated(contest_id, handles_map, output_list, total_solve)
         print("done contest", contest_id)
 
     output_list[0].append("Total Solve")
@@ -118,5 +131,10 @@ if __name__ == '__main__':
               newline='') as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(output_list)
+
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    main()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
