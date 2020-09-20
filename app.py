@@ -15,7 +15,6 @@ app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']  # allow blackl
 app.config["JWT_ACCESS_TOKEN_EXPIRES_MINUTES"] = 1440
 app.secret_key = "abcdxyz"
 
-
 api = Api(app)
 jwt = JWTManager(app)
 CORS(app)
