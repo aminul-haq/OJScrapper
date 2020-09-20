@@ -44,7 +44,7 @@ def get_contest_details_data_formatted(contest_id):
     for submission in data["submissions"]:
         if submission[2] == 1:
             username = user_map[str(submission[0])]
-            submission_time = begin_time + submission[len(submission) - 1]
+            submission_time = begin_time + (submission[len(submission) - 1] * 1000)
             problem_id = submission[1]
             if username not in solve_map:
                 solve_map[username] = list()
@@ -123,7 +123,7 @@ def get_total_solve_in_contest_with_timestamp(data, user_id, start_time, end_tim
     if "submissions" not in data:
         return 0
     for submission in data["submissions"]:
-        submission_time = begin_time + submission[len(submission) - 1]
+        submission_time = begin_time + (submission[len(submission) - 1] * 1000)
         if submission_time < start_time or submission_time > end_time:
             continue
         if submission[0] == user_id and submission[2] == 1:

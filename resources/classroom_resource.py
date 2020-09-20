@@ -147,3 +147,21 @@ class ClassRankList(Resource):
         start_time = data["start_time"] if "start_time" in data else -INF
         end_time = data["end_time"] if "end_time" in data else INF
         return solve_updater.get_rank_list_from_db(user_list, vjudge_contest_list, start_time, end_time), 200
+
+
+class ClassroomUpdate(Resource):
+    @jwt_required
+    def post(self):
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user.is_admin:
+            return {MESSAGE: "admin privilege required"}, 400
+
+        data = request.get_json()
+        if CLASSROOM_NAME not in data:
+            return {MESSAGE: "invalid data"}, 400
+        classroom = ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME])
+        if not classroom:
+            return {MESSAGE: "classroom not found"}, 404
+
+        threading.Thread(target=update_students, args=[classroom]).start()
+        return {MESSAGE: "Classroom data is being updated"}, 200

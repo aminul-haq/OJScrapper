@@ -13,6 +13,13 @@ class OjModel(UserMixin):
         self.oj_info = oj_info
 
     @classmethod
+    def get_vjudge_username(cls, username):
+        user = OjModel.get_by_username(username)
+        if user and "VJudge" in user.oj_info and "username" in user.oj_info["VJudge"]:
+            return user.oj_info["VJudge"]["username"]
+        return None
+
+    @classmethod
     def get_by_username(cls, username):
         data = Database.find_one(COLLECTION_NAME, {"username": username})
         if data is not None:
@@ -33,6 +40,9 @@ class OjModel(UserMixin):
 
     def save_to_mongo(self):
         Database.insert(COLLECTION_NAME, self.json())
+
+    def delete_from_db(self):
+        Database.remove(COLLECTION_NAME, {"username": self.username})
 
     def update_to_mongo(self, new_values):
         json = self.json()

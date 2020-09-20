@@ -136,6 +136,8 @@ class User(Resource):
         if not user:
             return {MESSAGE: "User Not Found"}, 404
         user.delete_from_db()
+        oj_info = OjModel.get_by_username(data[USERNAME])
+        oj_info.delete_from_db()
         return {MESSAGE: "User deleted."}, 200
 
 

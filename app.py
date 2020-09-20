@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from resources.user_resource import *
 from resources.classroom_resource import *
 from resources.student_resource import *
+from resources.dashboard_resource import *
 from common.database import Database
 from flask_cors import CORS
 
@@ -45,6 +46,9 @@ api.add_resource(Classroom, "/classroom")
 api.add_resource(CreateClassroom, "/createclass")
 api.add_resource(Student, "/student")
 api.add_resource(ClassRankList, "/classrank")
+api.add_resource(Dashboard, "/dashboard")
+api.add_resource(ContestData, "/contestdata")
+api.add_resource(ClassroomUpdate, "/udpateclassdata")
 
 
 @app.before_first_request
