@@ -13,6 +13,7 @@ from flask_jwt_extended import (
     get_raw_jwt
 )
 from models.user_model import UserModel
+from models.whitlist_emails_model import WhitelistEmailsModel
 from models.classroom_model import ClassroomModel
 from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
@@ -35,6 +36,9 @@ class UserRegister(Resource):
 
         if UserModel.get_by_email(data[EMAIL]):
             return {MESSAGE: "A user with that email already exists"}, 400
+
+        if not WhitelistEmailsModel.check_email(data[EMAIL]):
+            return {MESSAGE: "email is not valid"}, 400
 
         data["password"] = UserModel.encrypt_password(data["password"])
         user = UserModel(**data)
@@ -122,7 +126,8 @@ class User(Resource):
             email_user = UserModel.get_by_email(data[EMAIL])
             if EMAIL in data and email_user and email_user != user:
                 return {MESSAGE: "email already exists"}, 400
-
+            if not WhitelistEmailsModel.check_email(data[EMAIL]):
+                return {MESSAGE: "email is not valid"}, 400
         user.update_to_mongo(data)
 
         oj_info = OjModel.get_by_username(identity)
