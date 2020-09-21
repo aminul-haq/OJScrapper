@@ -65,7 +65,7 @@ def get_todos(username):
 
 def get_announcements(username):
     announcement_list = [
-        "Please complete your remaining tasks within 28 Sept, 2020"
+        "Please complete your remaining tasks within 28 Sept, 2020",
         "Last Individual contest is due on 25 Sept, 2020 at 2.30 pm",
         "Tentative date for final graduation contest is 16 Oct, 2020"
     ]
