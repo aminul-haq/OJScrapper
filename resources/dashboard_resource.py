@@ -53,14 +53,23 @@ def get_todos(username):
         return None
     oj_info = oj_info.oj_info
     todo_list = []
-    if VJUDGE not in oj_info or USERNAME not in oj_info[VJUDGE] or not oj_info[USERNAME][VJUDGE]:
+    if VJUDGE not in oj_info or USERNAME not in oj_info[VJUDGE] or not oj_info[VJUDGE][USERNAME]:
         todo_list.append("Please add your Vjudge username in your profile")
-    if CODEFORCES not in oj_info or USERNAME not in oj_info[CODEFORCES] or not oj_info[USERNAME][CODEFORCES]:
+    if CODEFORCES not in oj_info or USERNAME not in oj_info[CODEFORCES] or not oj_info[CODEFORCES][USERNAME]:
         todo_list.append("Please add your Codeforces username in your profile")
-    if ATCODER not in oj_info or USERNAME not in oj_info[ATCODER] or not oj_info[USERNAME][ATCODER]:
+    if ATCODER not in oj_info or USERNAME not in oj_info[ATCODER] or not oj_info[ATCODER][USERNAME]:
         todo_list.append("Please add your Atcoder username in your profile")
 
     return todo_list
+
+
+def get_announcements(username):
+    announcement_list = [
+        "Please complete your remaining tasks within 28 Sept, 2020"
+        "Last Individual contest is due on 25 Sept, 2020 at 2.30 pm",
+        "Tentative date for final graduation contest is 16 Oct, 2020"
+    ]
+    return announcement_list
 
 
 def get_last_30_days_solve(submission_data, username):
@@ -117,10 +126,12 @@ class Dashboard(Resource):
         last_day_solve = get_last_day_solve(contest_data.data, vjudge_username)
         last_30_days_solve = get_last_30_days_solve(contest_data.data, vjudge_username)
         todo_list = get_todos(username)
+        announcement_list = get_announcements(username)
 
         res["last_day_solve"] = last_day_solve
         res["last_30_days_solve"] = last_30_days_solve
         res["todo_list"] = todo_list
+        res["announcement_list"] = announcement_list
         return res, 200
 
 
