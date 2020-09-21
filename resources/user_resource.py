@@ -85,7 +85,8 @@ class User(Resource):
                            LAST_NAME: user.last_name,
                            USERNAME: user.username,
                            EMAIL: user.email,
-                           OJ_INFO: oj_data.oj_info if oj_data else {}
+                           OJ_INFO: oj_data.oj_info if oj_data else {},
+                           "delete_access": user.is_admin
                        }, 200
 
         else:
@@ -101,7 +102,10 @@ class User(Resource):
                         OJ_INFO: oj_data.oj_info if oj_data else {}
                     }
                 )
-            return user_list, 200
+            return {
+                       "user_list": user_list,
+                       "delete_access": user.is_admin
+                   }, 200
 
     @jwt_required
     def put(self):

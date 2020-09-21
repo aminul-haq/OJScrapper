@@ -141,9 +141,8 @@ class ClassRankList(Resource):
         user_list = classroom.user_list
         vjudge_contest_list = classroom.vjudge_contest_list
         if "contest_type" in data and data["contest_type"] != "all":
-            vjudge_contest_list = filter(lambda contest: contest["contest_type"] == data["contest_type"],
-                                         vjudge_contest_list)
-        # vjudge_contest_list = [x["contest_id"] for x in vjudge_contest_list]
+            vjudge_contest_list = list(filter(lambda contest: contest["contest_type"] == data["contest_type"],
+                                              vjudge_contest_list))
         start_time = data["start_time"] if "start_time" in data else -INF
         end_time = data["end_time"] if "end_time" in data else INF
         return solve_updater.get_rank_list_from_db(user_list, vjudge_contest_list, start_time, end_time), 200
