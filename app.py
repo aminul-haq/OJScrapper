@@ -6,6 +6,7 @@ from resources.classroom_resource import *
 from resources.student_resource import *
 from resources.dashboard_resource import *
 from common.database import Database
+from common import solve_updater
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -51,14 +52,23 @@ api.add_resource(ContestData, "/contestdata")
 api.add_resource(ClassroomUpdate, "/udpateclassdata")
 
 
-@app.before_first_request
-def initialize_database():
-    Database.initialize()
-
-
 @app.route("/")
 def home():
     return "Hello", 200
+
+
+def update_data():
+    threading.Thread(target=solve_updater.update_everything()).start()
+
+
+cron_job = BackgroundScheduler(daemon=True)
+cron_job.add_job(update_data, "interval", hours=6)
+
+
+@app.before_first_request
+def initialize_database():
+    Database.initialize()
+    cron_job.start()
 
 
 if __name__ == '__main__':
