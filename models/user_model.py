@@ -109,7 +109,7 @@ class UserModel(UserMixin):
         json = self.json()
         updated_values = json
         for key in new_values:
-            if key in json and key != "username":
+            if key in json and key != "username" and key != "is_admin":
                 if key == "password":
                     updated_values[key] = generate_password_hash(new_values[key]).decode("utf-8")
                 else:
