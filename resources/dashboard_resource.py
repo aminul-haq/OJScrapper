@@ -19,6 +19,7 @@ from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
 from common import solve_updater
 from common.database import Database
+from common.OjMap import *
 
 FIRST_NAME = "first_name"
 LAST_NAME = "last_name"
@@ -43,6 +44,23 @@ def get_last_day_solve(submission_data, username):
     start = int(d.timestamp() * 1000) + 1
     end = int(datetime.today().timestamp() * 1000)
     return get_solve_in_time_range(submission_data, username, start, end)
+
+
+def get_todos(username):
+    user = UserModel.get_by_username(username)
+    oj_info = OjModel.get_by_username(username)
+    if not user or not oj_info:
+        return None
+    oj_info = oj_info.oj_info
+    todo_list = []
+    if VJUDGE not in oj_info or USERNAME not in oj_info[VJUDGE] or not oj_info[USERNAME][VJUDGE]:
+        todo_list.append("Please add your Vjudge username in your profile")
+    if CODEFORCES not in oj_info or USERNAME not in oj_info[CODEFORCES] or not oj_info[USERNAME][CODEFORCES]:
+        todo_list.append("Please add your Codeforces username in your profile")
+    if ATCODER not in oj_info or USERNAME not in oj_info[ATCODER] or not oj_info[USERNAME][ATCODER]:
+        todo_list.append("Please add your Atcoder username in your profile")
+
+    return todo_list
 
 
 def get_last_30_days_solve(submission_data, username):
@@ -98,9 +116,11 @@ class Dashboard(Resource):
         contest_data = ContestDataModel.get_vjudge_contest_data()
         last_day_solve = get_last_day_solve(contest_data.data, vjudge_username)
         last_30_days_solve = get_last_30_days_solve(contest_data.data, vjudge_username)
+        todo_list = get_todos(username)
 
         res["last_day_solve"] = last_day_solve
         res["last_30_days_solve"] = last_30_days_solve
+        res["todo_list"] = todo_list
         return res, 200
 
 
