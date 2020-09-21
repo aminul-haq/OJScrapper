@@ -34,8 +34,8 @@ def update_user_with_username(username):
         oj_profiles[oj][SOLVE_LIST] = [str(x) for x in oj_profiles[oj][SOLVE_LIST]]  # converting to list of strings
 
     update_json(oj_profiles, CODEFORCES, cf_details)
-    update_json(oj_profiles, LIGHTOJ, loj_details)
     update_json(oj_profiles, ATCODER, atc_details)
+    # update_json(oj_profiles, LIGHTOJ, loj_details)
 
     user.update_to_mongo({"oj_info": oj_profiles})
 
@@ -217,11 +217,11 @@ def update_everything():
     print("done_updating")
 
 
-# if __name__ == '__main__':
-#     Database.initialize()
-#     print(UserModel.get_all_users())
-#     update_all_users()
-
+if __name__ == '__main__':
+    Database.initialize()
+    # print(UserModel.get_all_users())
+    # update_all_users()
+    update_user_with_username("_l_a_m_i_a_")
 
 """
 def bootcamp_update_one(username):
