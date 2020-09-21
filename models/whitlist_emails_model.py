@@ -17,7 +17,8 @@ class WhitelistEmailsModel(UserMixin):
         if data is not None:
             return cls(**data)
 
-    def check_email(self, email):
+    @classmethod
+    def check_email(cls, email):
         data = Database.find_one(COLLECTION_NAME, {"name": "whitelisted_email_list"})
         if not data or email in data["email_list"]:
             return True
