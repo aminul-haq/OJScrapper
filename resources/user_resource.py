@@ -104,7 +104,7 @@ class User(Resource):
                 )
             return {
                        "user_list": user_list,
-                       "delete_access": user.is_admin
+                       "delete_access": UserModel.get_by_username(get_jwt_identity()).is_admin
                    }, 200
 
     @jwt_required
