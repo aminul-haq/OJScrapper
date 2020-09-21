@@ -49,9 +49,8 @@ class UserRegister(Resource):
 class OJUpdate(Resource):
     @jwt_required
     def post(self):
-        claims = get_raw_jwt()
-        print(claims)
-        if claims["identity"] != "admin":
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user.is_admin:
             return {MESSAGE: "Admin privilege required"}, 401
         # update_everything()
         threading.Thread(target=update_everything).start()
