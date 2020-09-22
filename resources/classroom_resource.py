@@ -88,7 +88,7 @@ class Classroom(Resource):
     def put(self):
         user = UserModel.get_by_username(get_jwt_identity())
         data = request.get_json()
-        if not user.is_admin:
+        if not user or not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
 
         if not data or CLASSROOM_NAME not in data:

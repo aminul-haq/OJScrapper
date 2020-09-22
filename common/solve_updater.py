@@ -1,6 +1,7 @@
 import datetime
 import json
 from common.database import Database
+from models.contest_data_model import ContestDataModel
 from models.oj_model import OjModel, COLLECTION_NAME as OJ_COLLECTION_NAME
 from models.user_model import UserModel, COLLECTION_NAME as USER_COLLECTION_NAME
 from models.student_model import StudentModel, COLLECTION_NAME as BOOTCAMP_COLLECTION_NAME
@@ -41,7 +42,7 @@ def update_user_with_username(username):
 
 
 def update_json(oj_profiles, oj_name, arg):
-    if oj_name in oj_profiles and oj_profiles[oj_name]:
+    if oj_name in oj_profiles and oj_profiles[oj_name] and oj_profiles[oj_name][USERNAME]:
         solve_list_data = arg(oj_profiles[oj_name][USERNAME])
         solve_list_data = [str(x) for x in solve_list_data]  # converting to list of strings
         if SOLVE_LIST in oj_profiles[oj_name] and oj_profiles[oj_name][SOLVE_LIST]:
@@ -136,13 +137,14 @@ def update_contest_data():
     contest_data = {}
     for contest_id in contest_id_set:
         contest_data[contest_id] = vjudge_sraper.get_contest_details_data(contest_id)
-    json_data = {
-        "name": "vjudge_contest_data",
-        "updated_on": datetime.datetime.today().timestamp(),
-        "data": contest_data
-    }
-    Database.remove("contest_data", {})
-    Database.insert("contest_data", json_data)
+    # json_data = {
+    #     "name": "vjudge_contest_data",
+    #     "updated_on": datetime.datetime.today().timestamp(),
+    #     "data": contest_data
+    # }
+    # Database.remove("contest_data", {})
+    # Database.insert("contest_data", json_data)
+    ContestDataModel.update_contest_data(updated_on=datetime.datetime.today().timestamp(), data=contest_data)
 
 
 def update_contest_data_formatted():
@@ -154,13 +156,14 @@ def update_contest_data_formatted():
     contest_data = {}
     for contest_id in contest_id_set:
         contest_data[contest_id] = vjudge_sraper.get_contest_details_data_formatted(contest_id)
-    json_data = {
-        "name": "vjudge_contest_data",
-        "updated_on": datetime.datetime.today().timestamp(),
-        "data": contest_data
-    }
-    Database.remove("contest_data", {})
-    Database.insert("contest_data", json_data)
+    # json_data = {
+    #     "name": "vjudge_contest_data",
+    #     "updated_on": datetime.datetime.today().timestamp(),
+    #     "data": contest_data
+    # }
+    # Database.remove("contest_data", {})
+    # Database.insert("contest_data", json_data)
+    ContestDataModel.update_contest_data(updated_on=datetime.datetime.today().timestamp(), data=contest_data)
 
 
 def count_in_range(values, low, high):
@@ -212,7 +215,7 @@ def update_everything():
     update_all_users()
     classroom_list = ClassroomModel.get_all_classrooms()
     for classroom in classroom_list:
-        update_students(classroom)
+        update_students(ClassroomModel(**classroom))
     update_contest_data_formatted()
     print("done_updating")
 

@@ -19,6 +19,17 @@ class ContestDataModel(UserMixin):
             return cls(**data)
 
     @classmethod
+    def update_contest_data(cls, updated_on, data):
+        contest_data = cls.get_by_name("vjudge_contest_data")
+        if not contest_data:
+            contest_data = ContestDataModel("vjudge_contest_data", updated_on, data)
+            contest_data.save_to_mongo()
+        else:
+            contest_data.updated_on = updated_on
+            contest_data.data = data
+            contest_data.update_to_mongo({})
+
+    @classmethod
     def get_by_name(cls, name):
         data = Database.find_one(COLLECTION_NAME, {"name": name})
         if data is not None:
