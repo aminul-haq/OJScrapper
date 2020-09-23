@@ -2,7 +2,7 @@ import datetime
 import threading
 
 from flask_restful import Resource, reqparse
-from flask import request
+from flask import request, current_app as app
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_jwt_extended import (
     create_access_token,
@@ -26,6 +26,7 @@ EMAIL = "email"
 MESSAGE = "message"
 OJ_INFO = "oj_info"
 PASSWORD = "password"
+IS_ADMIN = "is_admin"
 
 
 class UserRegister(Resource):
@@ -46,7 +47,7 @@ class UserRegister(Resource):
 
         oj_data = OjModel(data[USERNAME])
         oj_data.save_to_mongo()
-
+        # app.logger.info("User created successfully " + user.username + " " + user.email)
         return {MESSAGE: "User created successfully."}, 201
 
 
@@ -74,11 +75,12 @@ class User(Resource):
                    LAST_NAME: user.last_name,
                    USERNAME: user.username,
                    EMAIL: user.email,
+                   IS_ADMIN: user.is_admin,
                    OJ_INFO: oj_data.oj_info if oj_data else {}
                }, 200
 
     @jwt_required
-    def post(cls):
+    def post(self):
         data = request.get_json()
         if data and USERNAME in data:
             user = UserModel.get_by_username(data[USERNAME])
@@ -138,7 +140,7 @@ class User(Resource):
         return {MESSAGE: "data updated"}, 200
 
     @jwt_required
-    def delete(cls):
+    def delete(self):
         user = UserModel.get_by_username(get_jwt_identity())
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
@@ -151,6 +153,16 @@ class User(Resource):
         oj_info.delete_from_db()
         return {MESSAGE: "User deleted."}, 200
 
+
+# class PasswordReset(Resource):
+#     def post(self):
+#         data = request.get_json()
+#         if USERNAME in data:
+#             #TODO
+#         elif EMAIL in data:
+#             # TODO
+#         else:
+#             return {MESSAGE: "username or email is required"}, 400
 
 class Lookup(Resource):
     @jwt_required

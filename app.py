@@ -5,9 +5,11 @@ from resources.user_resource import *
 from resources.classroom_resource import *
 from resources.student_resource import *
 from resources.dashboard_resource import *
+from resources.admin_panel_resources import *
 from common.database import Database
 from common import solve_updater
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -50,19 +52,12 @@ api.add_resource(ClassRankList, "/classrank")
 api.add_resource(Dashboard, "/dashboard")
 api.add_resource(ContestData, "/contestdata")
 api.add_resource(ClassroomUpdate, "/udpateclassdata")
+api.add_resource(DataUpdater, "/updatescheduler")
 
 
 @app.route("/")
 def home():
     return "Hello", 200
-
-
-def update_data():
-    threading.Thread(target=solve_updater.update_everything()).start()
-
-
-cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(update_data, "interval", hours=6)
 
 
 @app.before_first_request
