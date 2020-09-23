@@ -74,6 +74,7 @@ def update_students(classroom):
             long_contests.append(
                 {
                     "contest_title": contest["contest_title"],
+                    "contest_id":  contest["contest_id"],
                     "total_problems": contest["total_problems"],
                     "minimum_solve_required": contest["minimum_solve_required"],
                     "solved_problems": vjudge_sraper.solve_details_in_contest_from_data(
