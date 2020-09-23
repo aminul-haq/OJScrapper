@@ -47,8 +47,6 @@ class DataUpdater(Resource):
             return {MESSAGE: "admin privilege required"}, 400
 
         data = request.get_json()
-        if not data or "level" not in data or "interval" not in data:
-            return {MESSAGE: "invalid data"}, 400
         level = data["level"]
         interval = data["interval"]
         if not user or not user.is_admin:
@@ -61,4 +59,4 @@ class DataUpdater(Resource):
             cron_job.reschedule_job(job_id="update_data", trigger="interval", minutes=interval)
         else:
             return {"Message", "invalid data"}, 400
-        return {"Message", "data updater rescheduled"}, 200
+        return {MESSAGE: "data updater rescheduled"}, 200
