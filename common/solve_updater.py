@@ -190,7 +190,6 @@ def get_rank_list_from_db(user_list, contest_list, start_time, end_time):
     for username in user_list:
         solve_list = [username]
         total_solve = 0
-        tasks = 0
         min_solve_required = 0
         min_solve_completed = 0
 
