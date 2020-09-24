@@ -9,7 +9,7 @@ from resources.admin_panel_resources import *
 from common.database import Database
 from common import solve_updater
 from flask_cors import CORS
-from apscheduler.schedulers.background import BackgroundScheduler
+import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -58,6 +58,12 @@ api.add_resource(DataUpdater, "/updatescheduler")
 @app.route("/")
 def home():
     return "Hello", 200
+
+
+@app.route("/servertime")
+@jwt_required
+def get_server_time():
+    return str(datetime.datetime.now()), 200
 
 
 @app.before_first_request
