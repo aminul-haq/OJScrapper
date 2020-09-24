@@ -1,4 +1,5 @@
 import datetime
+import math
 import json
 from common.database import Database
 from models.contest_data_model import ContestDataModel
@@ -74,7 +75,7 @@ def update_students(classroom):
             long_contests.append(
                 {
                     "contest_title": contest["contest_title"],
-                    "contest_id":  contest["contest_id"],
+                    "contest_id": contest["contest_id"],
                     "total_problems": contest["total_problems"],
                     "minimum_solve_required": contest["minimum_solve_required"],
                     "solved_problems": vjudge_sraper.solve_details_in_contest_from_data(
@@ -177,7 +178,7 @@ def count_in_range(values, low, high):
 
 def get_rank_list_from_db(user_list, contest_list, start_time, end_time):
     contest_data = Database.find_one("contest_data", {"name": "vjudge_contest_data"})
-    header = ["username"]
+    header = ["username", "Total Solve", "Tasks Completed"]
     data_map = contest_data["data"]
     for contest in contest_list:
         if contest[CONTEST_ID] in data_map:
@@ -185,12 +186,14 @@ def get_rank_list_from_db(user_list, contest_list, start_time, end_time):
         else:
             header.append(contest[CONTEST_ID])
 
-    header.append("Total Solve")
-
     rank_list = []
     for username in user_list:
         solve_list = [username]
         total_solve = 0
+        tasks = 0
+        min_solve_required = 0
+        min_solve_completed = 0
+
         try:
             vjudge_handle = OjModel.get_by_username(username).oj_info[VJUDGE][USERNAME]
         except:
@@ -201,12 +204,17 @@ def get_rank_list_from_db(user_list, contest_list, start_time, end_time):
                                              end_time)
             else:
                 solve_count = 0
+            min_solve_completed = min_solve_completed + min(solve_count, contest["minimum_solve_required"])
+            min_solve_required = min_solve_required + contest["minimum_solve_required"]
             total_solve += solve_count
             solve_list.append(int(solve_count))
-        solve_list.append(total_solve)
+
+        tasks = (min_solve_completed * 100) // min_solve_required
+        solve_list.insert(1, total_solve)
+        solve_list.insert(2, tasks)
         rank_list.append(solve_list)
 
-    rank_list = sorted(rank_list, key=lambda row: row[len(row) - 1], reverse=True)
+    rank_list = sorted(rank_list, key=lambda row: row[1], reverse=True)
     rank_list.insert(0, header)
     return rank_list
 
