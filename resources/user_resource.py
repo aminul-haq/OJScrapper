@@ -136,8 +136,8 @@ class User(Resource):
         if oj_info:
             oj_info.update_to_mongo(data)
 
-        update_user_with_username(user.username)
-        return {MESSAGE: "data updated"}, 200
+        threading.Thread(target=update_user_with_username, args=[user.username]).start()
+        return {MESSAGE: "User data is being updated"}, 200
 
     @jwt_required
     def delete(self):
