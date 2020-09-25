@@ -53,6 +53,12 @@ api.add_resource(Dashboard, "/dashboard")
 api.add_resource(ContestData, "/contestdata")
 api.add_resource(ClassroomUpdate, "/udpateclassdata")
 api.add_resource(DataUpdater, "/updatescheduler")
+api.add_resource(EmailSender, "/sendmail")
+api.add_resource(Announcements, "/announcements")
+api.add_resource(WhitelistEmail, "/whitelist")
+api.add_resource(Todos, "/todos")
+
+
 
 
 @app.route("/")

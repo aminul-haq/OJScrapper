@@ -2,27 +2,32 @@ import uuid
 from common.database import Database
 from flask_login import UserMixin
 
-COLLECTION_NAME = "whitelist_email"
+COLLECTION_NAME = "announcements"
 
 
-class WhitelistEmailsModel(UserMixin):
-    def __init__(self, name, email_list=[], _id=None):
+class AnnouncementsModel(UserMixin):
+    def __init__(self, name, announcement_list=[], _id=None):
         self.name = name
         self.id = uuid.uuid4().hex if _id is None else _id
-        self.email_list = email_list
+        self.announcement_list = announcement_list
 
     @classmethod
-    def get_whitelisted_email_list(cls):
-        data = Database.find_one(COLLECTION_NAME, {"name": "whitelisted_email_list"})
+    def get_announcements(cls):
+        data = Database.find_one(COLLECTION_NAME, {"name": "announcements"})
         if data is not None:
             return cls(**data)
+        else:
+            data = AnnouncementsModel(name="announcements")
+            data.save_to_mongo()
+            return data
 
-    @classmethod
-    def check_email(cls, email):
-        data = Database.find_one(COLLECTION_NAME, {"name": "whitelisted_email_list"})
-        if not data or email in data["email_list"]:
-            return True
-        return False
+    def add_announcement(self, new_announcement):
+        self.announcement_list.append(new_announcement)
+        self.update_to_mongo()
+
+    def add_announcement_list(self, new_announcement):
+        self.announcement_list.extend(new_announcement)
+        self.update_to_mongo()
 
     @classmethod
     def get_by_name(cls, name):
@@ -40,7 +45,7 @@ class WhitelistEmailsModel(UserMixin):
         return {
             "_id": self.id,
             "name": self.name,
-            "email_list": self.email_list
+            "announcement_list": self.announcement_list
         }
 
     def save_to_mongo(self):
