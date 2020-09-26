@@ -59,8 +59,6 @@ api.add_resource(WhitelistEmail, "/whitelist")
 api.add_resource(Todos, "/todos")
 
 
-
-
 @app.route("/")
 def home():
     return "Hello", 200

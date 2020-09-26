@@ -4,12 +4,8 @@ from flask_restful import Resource, reqparse
 from flask import request
 from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    jwt_refresh_token_required,
     get_jwt_identity,
-    jwt_required,
-    get_raw_jwt
+    jwt_required
 )
 from models.user_model import UserModel
 from models.classroom_model import ClassroomModel
@@ -63,7 +59,7 @@ def get_todos(username):
     return todo_list
 
 
-def get_announcements(username):
+def get_announcements(username, classroom_name):
     announcement_list = [
         "Please complete your remaining tasks within 28 Sept, 2020",
         "Last Individual contest is due on 25 Sept, 2020 at 2.30 pm",
@@ -126,7 +122,7 @@ class Dashboard(Resource):
         last_day_solve = get_last_day_solve(contest_data.data, vjudge_username)
         last_30_days_solve = get_last_30_days_solve(contest_data.data, vjudge_username)
         todo_list = get_todos(username)
-        announcement_list = get_announcements(username)
+        announcement_list = get_announcements(username, classroom_name)
 
         res["last_day_solve"] = last_day_solve
         res["last_30_days_solve"] = last_30_days_solve
