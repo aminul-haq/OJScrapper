@@ -57,6 +57,7 @@ api.add_resource(EmailSender, "/sendmail")
 api.add_resource(Announcements, "/announcements")
 api.add_resource(WhitelistEmail, "/whitelist")
 api.add_resource(Todos, "/todos")
+api.add_resource(PasswordReset, "/resetpass")
 
 
 @app.route("/")

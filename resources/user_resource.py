@@ -1,5 +1,7 @@
-import datetime
+from datetime import datetime, timedelta
 import threading
+import random
+import string
 
 from flask_restful import Resource, reqparse
 from flask import request, current_app as app
@@ -12,12 +14,15 @@ from flask_jwt_extended import (
     jwt_required,
     get_raw_jwt
 )
+
+from email_service import mail_sender
 from models.user_model import UserModel
 from models.whitlist_emails_model import WhitelistEmailsModel
 from models.classroom_model import ClassroomModel
 from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
 from common.solve_updater import update_user_with_username, update_everything
+from models.mail_templates import MailTemplate
 
 FIRST_NAME = "first_name"
 LAST_NAME = "last_name"
@@ -27,6 +32,12 @@ MESSAGE = "message"
 OJ_INFO = "oj_info"
 PASSWORD = "password"
 IS_ADMIN = "is_admin"
+
+
+def get_random_alphanumeric_string(length):
+    letters_and_digits = string.ascii_letters + string.digits
+    result_str = ''.join((random.choice(letters_and_digits) for i in range(length)))
+    return result_str
 
 
 class UserRegister(Resource):
@@ -130,6 +141,15 @@ class User(Resource):
                 return {MESSAGE: "email already exists"}, 400
             if not WhitelistEmailsModel.check_email(data[EMAIL]):
                 return {MESSAGE: "email is not valid"}, 400
+
+        if PASSWORD in data:
+            if "old_password" not in data:
+                return {MESSAGE: "current password is required to set new password"}, 400
+            if not UserModel.login_valid_username(user.username, data["old_password"]):
+                return {MESSAGE: "wrong current password"}, 400
+            data[PASSWORD] = UserModel.encrypt_password(data[PASSWORD])
+            del data["old_password"]
+
         user.update_to_mongo(data)
 
         oj_info = OjModel.get_by_username(identity)
@@ -154,15 +174,32 @@ class User(Resource):
         return {MESSAGE: "User deleted."}, 200
 
 
-# class PasswordReset(Resource):
-#     def post(self):
-#         data = request.get_json()
-#         if USERNAME in data:
-#             #TODO
-#         elif EMAIL in data:
-#             # TODO
-#         else:
-#             return {MESSAGE: "username or email is required"}, 400
+class PasswordReset(Resource):
+    def post(self):
+        data = request.get_json()
+
+        if USERNAME in data:
+            user = UserModel.get_by_username(data[USERNAME])
+        elif EMAIL in data:
+            user = UserModel.get_by_email(data[EMAIL])
+        else:
+            return {MESSAGE: "username or email is required"}, 400
+        if not user:
+            return {MESSAGE: "invalid username or password"}, 400
+
+        temp_pass = get_random_alphanumeric_string(8)
+        user.reset_pass = {
+            "expires_on": (datetime.today() + timedelta(hours=1)).timestamp(),
+            "temp_pass": UserModel.encrypt_password(temp_pass)
+        }
+        user.update_to_mongo()
+
+        mail_template = MailTemplate.get_by_template_name("password_reset")
+        threading.Thread(target=mail_sender.send_mail,
+                         args=[[user.email], mail_template.subject, mail_template.message % temp_pass]).start()
+
+        return {MESSAGE: "Please check your mail inbox"}, 200
+
 
 class Lookup(Resource):
     @jwt_required
@@ -224,7 +261,7 @@ class UserLogin(Resource):
         data = request.get_json()
         user = UserModel.get_by_username(data[USERNAME])
         if user and UserModel.login_valid_username(data[USERNAME], data[PASSWORD]):
-            expires = datetime.timedelta(days=7)
+            expires = timedelta(days=7)
             access_token = create_access_token(identity=data[USERNAME], fresh=True, expires_delta=expires)
             refresh_token = create_refresh_token(data[USERNAME])
             return {

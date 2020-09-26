@@ -66,7 +66,7 @@ if __name__ == '__main__':
     #         "topic": "Password Reset",
     #         "template_name": "password_reset",
     #         "subject": "Reset Password",
-    #         "message": "Hello user,\nYou can use the temporary password below to login to your PScamp account within the next 60 minutes. If you have forgotten your current password, you are advised to change it to a new one using this temporary password. \n\nPassword:.......\n\nThis password will expire after 60 minutes.\nPlease ignore if you did not request for password recovery.\n"
+    #         "message": "Hello user,\nYou can use the temporary password below to login to your PScamp account within the next 60 minutes. If you have forgotten your current password, you are advised to change it to a new one using this temporary password. \n\nPassword: %s\n\nThis password will expire after 60 minutes.\nPlease ignore if you did not request for password recovery.\n"
     #     },
     #     {
     #         "topic": "No solve for a week",
@@ -103,5 +103,9 @@ if __name__ == '__main__':
     #     data = MailTemplate(**template)
     #     data.delete_from_db()
     #     data.save_to_mongo()
+    #
+    # data = MailTemplate.get_by_template_name("password_reset")
+    # st = data.message % "jadpoJPOUisop885"
+    # print(st)
 
 

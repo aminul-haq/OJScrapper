@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import uuid
 from flask import session
 from common.database import Database
@@ -10,7 +10,7 @@ COLLECTION_NAME = "users"
 
 
 class UserModel(UserMixin):
-    def __init__(self, email, password, username, first_name="", last_name="", _id=None, is_admin=False,
+    def __init__(self, email, password, username, first_name="", last_name="", reset_pass={}, _id=None, is_admin=False,
                  classroom_name=None):
         self.email = email
         self.password = password
@@ -19,6 +19,7 @@ class UserModel(UserMixin):
         self.first_name = first_name
         self.last_name = last_name
         self.is_admin = is_admin
+        self.reset_pass = reset_pass
         self.classroom_name = classroom_name
 
     @classmethod
@@ -58,7 +59,13 @@ class UserModel(UserMixin):
         user = UserModel.get_by_username(username)
         if user is not None:
             # Check the password
-            return check_password_hash(user.password, password)
+            if not check_password_hash(user.password, password):
+                if "expires_on" in user.reset_pass and "temp_pass" in user.reset_pass:
+                    if datetime.now().timestamp() <= user.reset_pass["expires_on"]:
+                        return check_password_hash(user.reset_pass["temp_pass"], password)
+            else:
+                return True
+
         return False
 
     @classmethod
@@ -91,6 +98,7 @@ class UserModel(UserMixin):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "password": self.password,
+            "reset_pass": self.reset_pass,
             "is_admin": self.is_admin,
             "classroom_name": self.classroom_name
         }
@@ -105,7 +113,7 @@ class UserModel(UserMixin):
     # def update_to_mongo(self, new_values):
     #     Database.update_one(COLLECTION_NAME, {"username": self.username}, new_values)
 
-    def update_to_mongo(self, new_values):
+    def update_to_mongo(self, new_values={}):
         json = self.json()
         updated_values = json
         for key in new_values:
