@@ -115,7 +115,7 @@ class Announcements(Resource):
             return {MESSAGE: "Invalid data"}, 400
 
         for announcement in data["announcements_list"]:
-            new_announcement = TodosModel(**announcement)
+            new_announcement = AnnouncementsModel(**announcement)
             new_announcement.delete_from_db()
             new_announcement.save_to_mongo()
 
