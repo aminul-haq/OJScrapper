@@ -6,32 +6,21 @@ COLLECTION_NAME = "announcements"
 
 
 class AnnouncementsModel(UserMixin):
-    def __init__(self, name, announcement_list=[], _id=None):
-        self.name = name
+    def __init__(self, announcement="", added_on=0, expires_on=0, group="", _id=None):
+        self.announcement = announcement
         self.id = uuid.uuid4().hex if _id is None else _id
-        self.announcement_list = announcement_list
+        self.added_on = added_on
+        self.expires_on = expires_on
+        self.group = group
 
     @classmethod
-    def get_announcements(cls):
-        data = Database.find_one(COLLECTION_NAME, {"name": "announcements"})
-        if data is not None:
-            return cls(**data)
-        else:
-            data = AnnouncementsModel(name="announcements")
-            data.save_to_mongo()
-            return data
-
-    def add_announcement(self, new_announcement):
-        self.announcement_list.append(new_announcement)
-        self.update_to_mongo()
-
-    def add_announcement_list(self, new_announcement):
-        self.announcement_list.extend(new_announcement)
-        self.update_to_mongo()
+    def get_all_announcements(cls):
+        data = Database.get_all_records(COLLECTION_NAME, {})
+        return data
 
     @classmethod
-    def get_by_name(cls, name):
-        data = Database.find_one(COLLECTION_NAME, {"name": name})
+    def get_by_announcement(cls, announcement):
+        data = Database.find_one(COLLECTION_NAME, {"announcement": announcement})
         if data is not None:
             return cls(**data)
 
@@ -44,20 +33,22 @@ class AnnouncementsModel(UserMixin):
     def json(self):
         return {
             "_id": self.id,
-            "name": self.name,
-            "announcement_list": self.announcement_list
+            "announcement": self.announcement,
+            "added_on": self.added_on,
+            "expires_on": self.expires_on,
+            "group": self.group
         }
 
     def save_to_mongo(self):
         Database.insert(COLLECTION_NAME, self.json())
 
     def delete_from_db(self):
-        Database.remove(COLLECTION_NAME, {"name": self.name})
+        Database.remove(COLLECTION_NAME, {"_id": self.id})
 
     def update_to_mongo(self, new_values={}):
         json = self.json()
         updated_values = json
         for key in new_values:
-            if key in json and key != "name":
+            if key in json and key != "_id":
                 updated_values[key] = new_values[key]
-        Database.update_one_set(COLLECTION_NAME, {"name": self.name}, updated_values)
+        Database.update_one_set(COLLECTION_NAME, {"_id": self.id}, updated_values)

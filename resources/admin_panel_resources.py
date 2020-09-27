@@ -96,11 +96,11 @@ class Announcements(Resource):
             return {MESSAGE: "user not found"}, 404
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
-        announcements = AnnouncementsModel.get_announcements()
+        announcements = AnnouncementsModel.get_all_announcements()
         if not announcements:
             return {MESSAGE: "no announcements found"}, 400
         else:
-            return {"announcement_list": announcements.announcement_list}, 200
+            return {"announcements_list": announcements}, 200
 
     @jwt_required
     def post(self):
@@ -111,12 +111,32 @@ class Announcements(Resource):
             return {MESSAGE: "admin privilege required"}, 400
 
         data = request.get_json()
-        if "announcement_list" not in data:
+        if "announcements_list" not in data:
             return {MESSAGE: "Invalid data"}, 400
 
-        announcements = AnnouncementsModel.get_announcements()
-        announcements.add_announcement_list(data["announcement_list"])
+        for announcement in data["announcements_list"]:
+            new_announcement = TodosModel(**announcement)
+            new_announcement.save_to_mongo()
+
         return {MESSAGE: "announcements added"}, 200
+
+    @jwt_required
+    def delete(self):
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user:
+            return {MESSAGE: "user not found"}, 404
+        if not user.is_admin:
+            return {MESSAGE: "admin privilege required"}, 400
+
+        data = request.get_json()
+        if "announcements_list" not in data:
+            return {MESSAGE: "Invalid data"}, 400
+
+        for announcement in data["announcements_list"]:
+            new_announcement = TodosModel(**announcement)
+            new_announcement.delete_from_db()
+
+        return {MESSAGE: "announcements removed"}, 200
 
 
 class Todos(Resource):
@@ -127,11 +147,11 @@ class Todos(Resource):
             return {MESSAGE: "user not found"}, 404
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
-        todos = TodosModel.get_todos()
+        todos = TodosModel.get_all_todos()
         if not todos:
             return {MESSAGE: "no todos found"}, 400
         else:
-            return {"todos_list": todos.todos_list}, 200
+            return {"todos_list": todos}, 200
 
     @jwt_required
     def post(self):
@@ -145,9 +165,29 @@ class Todos(Resource):
         if "todos_list" not in data:
             return {MESSAGE: "Invalid data"}, 400
 
-        todos = TodosModel.get_todos()
-        todos.add_todo_list(data["todos_list"])
+        for todo in data["todos_list"]:
+            new_todo = TodosModel(**todo)
+            new_todo.save_to_mongo()
+
         return {MESSAGE: "todos added"}, 200
+
+    @jwt_required
+    def delete(self):
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user:
+            return {MESSAGE: "user not found"}, 404
+        if not user.is_admin:
+            return {MESSAGE: "admin privilege required"}, 400
+
+        data = request.get_json()
+        if "todos_list" not in data:
+            return {MESSAGE: "Invalid data"}, 400
+
+        for todo in data["todos_list"]:
+            new_todo = TodosModel(**data)
+            new_todo.delete_from_db()
+
+        return {MESSAGE: "todos removed"}, 200
 
 
 class WhitelistEmail(Resource):
@@ -178,3 +218,22 @@ class WhitelistEmail(Resource):
         whitelist_email.email_list = list(set(whitelist_email.email_list))
         whitelist_email.update_to_mongo()
         return {MESSAGE: "emails added to whitelist"}, 200
+
+    @jwt_required
+    def delete(self):
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user:
+            return {MESSAGE: "user not found"}, 404
+        if not user.is_admin:
+            return {MESSAGE: "admin privilege required"}, 400
+
+        data = request.get_json()
+        if not data or "email_list" not in data:
+            return {MESSAGE: "Invalid data"}, 400
+
+        whitelist_email = WhitelistEmailsModel.get_whitelisted_email_list()
+        for removed_email in data["email_list"]:
+            whitelist_email.email_list.remove(removed_email)
+
+        whitelist_email.update_to_mongo()
+        return {MESSAGE: "emails removed from whitelist"}, 200
