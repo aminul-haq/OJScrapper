@@ -103,7 +103,7 @@ class Announcements(Resource):
             return {"announcements_list": announcements}, 200
 
     @jwt_required
-    def post(self):
+    def put(self):
         user = UserModel.get_by_username(get_jwt_identity())
         if not user:
             return {MESSAGE: "user not found"}, 404
@@ -116,6 +116,7 @@ class Announcements(Resource):
 
         for announcement in data["announcements_list"]:
             new_announcement = TodosModel(**announcement)
+            new_announcement.delete_from_db()
             new_announcement.save_to_mongo()
 
         return {MESSAGE: "announcements added"}, 200
@@ -154,7 +155,7 @@ class Todos(Resource):
             return {"todos_list": todos}, 200
 
     @jwt_required
-    def post(self):
+    def put(self):
         user = UserModel.get_by_username(get_jwt_identity())
         if not user:
             return {MESSAGE: "user not found"}, 404
@@ -167,6 +168,7 @@ class Todos(Resource):
 
         for todo in data["todos_list"]:
             new_todo = TodosModel(**todo)
+            new_todo.delete_from_db()
             new_todo.save_to_mongo()
 
         return {MESSAGE: "todos added"}, 200
@@ -184,7 +186,7 @@ class Todos(Resource):
             return {MESSAGE: "Invalid data"}, 400
 
         for todo in data["todos_list"]:
-            new_todo = TodosModel(**data)
+            new_todo = TodosModel(**todo)
             new_todo.delete_from_db()
 
         return {MESSAGE: "todos removed"}, 200
