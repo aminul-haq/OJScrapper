@@ -147,7 +147,6 @@ class User(Resource):
                 return {MESSAGE: "current password is required to set new password"}, 400
             if not UserModel.login_valid_username(user.username, data["old_password"]):
                 return {MESSAGE: "wrong current password"}, 400
-            data[PASSWORD] = UserModel.encrypt_password(data[PASSWORD])
             del data["old_password"]
 
         user.update_to_mongo(data)
