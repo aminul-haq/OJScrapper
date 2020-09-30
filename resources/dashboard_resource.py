@@ -150,7 +150,7 @@ class Dashboard(Resource):
         contest_data = ContestDataModel.get_vjudge_contest_data()
         last_day_solve = get_last_day_solve(contest_data.data, vjudge_username)
         last_30_days_solve = get_last_30_days_solve(contest_data.data, vjudge_username)
-        todo_list = get_todos(username)
+        todo_list = get_todos(username, classroom_name)
         announcement_list = get_announcements(username, classroom_name)
 
         res["last_day_solve"] = last_day_solve
