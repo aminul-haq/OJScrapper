@@ -11,6 +11,9 @@ from models.user_model import UserModel
 from models.classroom_model import ClassroomModel
 from models.student_model import StudentModel
 from models.contest_data_model import ContestDataModel
+from models.announcemnets_model import AnnouncementsModel
+from models.todos_model import TodosModel
+
 from common.blacklist import BLACKLIST
 from models.oj_model import OjModel
 from common import solve_updater
@@ -42,7 +45,7 @@ def get_last_day_solve(submission_data, username):
     return get_solve_in_time_range(submission_data, username, start, end)
 
 
-def get_todos(username):
+def get_todos(username, classroom_name):
     user = UserModel.get_by_username(username)
     oj_info = OjModel.get_by_username(username)
     if not user or not oj_info:
@@ -56,15 +59,41 @@ def get_todos(username):
     if ATCODER not in oj_info or USERNAME not in oj_info[ATCODER] or not oj_info[ATCODER][USERNAME]:
         todo_list.append("Please add your Atcoder username in your profile")
 
+    timestamp = datetime.now().timestamp() * 1000
+
+    all_todos = TodosModel.get_todos_by_group(group="all")
+    for todo in all_todos:
+        if timestamp <= todo["expires_on"]:
+            todo_list.append(todo["todo"])
+
+    classroom_todos = TodosModel.get_todos_by_group(group=classroom_name)
+    for todo in classroom_todos:
+        if timestamp <= todo["expires_on"]:
+            todo_list.append(todo["todo"])
+
     return todo_list
 
 
 def get_announcements(username, classroom_name):
-    announcement_list = [
-        "Please complete your remaining tasks within 28 Sept, 2020",
-        "Last Individual contest is due on 25 Sept, 2020 at 2.30 pm",
-        "Tentative date for final graduation contest is 16 Oct, 2020"
-    ]
+    # announcement_list = [
+    #     "Please complete your remaining tasks within 28 Sept, 2020",
+    #     "Last Individual contest is due on 25 Sept, 2020 at 2.30 pm",
+    #     "Tentative date for final graduation contest is 16 Oct, 2020"
+    # ]
+
+    announcement_list = []
+    timestamp = datetime.now().timestamp() * 1000
+
+    all_announcements = AnnouncementsModel.get_announcements_by_group(group="all")
+    for announcement in all_announcements:
+        if timestamp <= announcement["expires_on"]:
+            announcement_list.append(announcement["announcement"])
+
+    classroom_announcements = AnnouncementsModel.get_announcements_by_group(group=classroom_name)
+    for announcement in classroom_announcements:
+        if timestamp <= announcement["expires_on"]:
+            announcement_list.append(announcement["announcement"])
+
     return announcement_list
 
 

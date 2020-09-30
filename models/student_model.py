@@ -10,8 +10,9 @@ COLLECTION_NAME = "student"
 
 
 class StudentModel(UserMixin):
-    def __init__(self, username, classroom_name, user_details={}, long_contests=[], _id=None):
+    def __init__(self, username, email,  classroom_name, user_details={}, long_contests=[], _id=None):
         self.username = username
+        self.email = email
         self.classroom_name = classroom_name
         self.user_details = user_details
         self.long_contests = long_contests
@@ -47,6 +48,7 @@ class StudentModel(UserMixin):
         return {
             "_id": self.id,
             "username": self.username,
+            "email": self.email,
             "classroom_name": self.classroom_name,
             "user_details": self.user_details,
             "long_contests": self.long_contests

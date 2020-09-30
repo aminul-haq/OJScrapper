@@ -14,7 +14,7 @@ from models.classroom_model import ClassroomModel
 from models.user_model import UserModel
 from models.oj_model import OjModel
 from models.student_model import StudentModel
-from common import solve_updater
+from common import solve_updater, database
 
 MESSAGE = "message"
 CLASSROOM_NAME = "classroom_name"
@@ -24,7 +24,10 @@ INF = 2 ** 100
 def update_students(classroom):
     StudentModel.remove({CLASSROOM_NAME: classroom.classroom_name})
     for username in classroom.user_list:
-        StudentModel(username, classroom.classroom_name).save_to_mongo()
+        user = UserModel.get_by_username(username)
+        if not user:
+            continue
+        StudentModel(username, user.email, classroom.classroom_name).save_to_mongo()
     solve_updater.update_students(classroom)
     solve_updater.update_contest_data_formatted()
 

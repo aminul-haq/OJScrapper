@@ -19,6 +19,11 @@ class AnnouncementsModel(UserMixin):
         return data
 
     @classmethod
+    def get_announcements_by_group(cls, group):
+        data = Database.get_all_records(COLLECTION_NAME, {"group": group})
+        return data
+
+    @classmethod
     def get_by_announcement(cls, announcement):
         data = Database.find_one(COLLECTION_NAME, {"announcement": announcement})
         if data is not None:

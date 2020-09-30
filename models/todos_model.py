@@ -19,6 +19,11 @@ class TodosModel(UserMixin):
         return data
 
     @classmethod
+    def get_todos_by_group(cls, group):
+        data = Database.get_all_records(COLLECTION_NAME, {"group": group})
+        return data
+
+    @classmethod
     def get_by_todo(cls, todo):
         data = Database.find_one(COLLECTION_NAME, {"todo": todo})
         if data is not None:
