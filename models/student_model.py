@@ -63,5 +63,5 @@ class StudentModel(UserMixin):
         for key in new_values:
             if key in json and key != "username" and key != "_id":
                 updated_values[key] = new_values[key]
-        # del updated_values['_id']
+        del updated_values['_id']
         Database.update_one_set(COLLECTION_NAME, {"username": self.username}, updated_values)
