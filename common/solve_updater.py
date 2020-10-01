@@ -70,6 +70,9 @@ def update_students(classroom):
         except:
             continue
         student = StudentModel.get_by_username_and_classroom_name(username, classroom.classroom_name)
+        if not student:
+            print("no student found with username = " + str(username))
+            continue
         long_contests = []
         for contest in classroom.vjudge_contest_list:
             long_contests.append(
