@@ -14,7 +14,7 @@ from models.contest_data_model import ContestDataModel
 from models.announcemnets_model import AnnouncementsModel
 from models.todos_model import TodosModel
 
-from common.blacklist import BLACKLIST
+from common.blacklist import blacklist_map
 from models.oj_model import OjModel
 from common import solve_updater
 from common.database import Database
@@ -75,12 +75,6 @@ def get_todos(username, classroom_name):
 
 
 def get_announcements(username, classroom_name):
-    # announcement_list = [
-    #     "Please complete your remaining tasks within 28 Sept, 2020",
-    #     "Last Individual contest is due on 25 Sept, 2020 at 2.30 pm",
-    #     "Tentative date for final graduation contest is 16 Oct, 2020"
-    # ]
-
     announcement_list = []
     timestamp = datetime.now().timestamp() * 1000
 

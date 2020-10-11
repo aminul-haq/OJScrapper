@@ -13,6 +13,7 @@ from scrappers.loj_scrapper import profile_details as loj_details
 from scrappers.atcoder_scraper import profile_details as atc_details
 from scrappers import vjudge_sraper
 from common.OjMap import *
+from common import blacklist
 
 INF = 2 ** 100
 CONTEST_ID = "contest_id"
@@ -223,6 +224,7 @@ def get_rank_list_from_db(user_list, contest_list, start_time, end_time):
 
 def update_everything():
     print("start_updating")
+    blacklist.remove_old_tokens()
     update_all_users()
     classroom_list = ClassroomModel.get_all_classrooms()
     for classroom in classroom_list:

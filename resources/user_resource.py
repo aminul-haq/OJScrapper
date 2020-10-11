@@ -19,7 +19,7 @@ from email_service import mail_sender
 from models.user_model import UserModel
 from models.whitlist_emails_model import WhitelistEmailsModel
 from models.classroom_model import ClassroomModel
-from common.blacklist import BLACKLIST
+from common import blacklist
 from models.oj_model import OjModel
 from common.solve_updater import update_user_with_username, update_everything
 from models.mail_templates import MailTemplate
@@ -275,7 +275,7 @@ class UserLogout(Resource):
     @jwt_required
     def post(self):
         jti = get_raw_jwt()["jti"]  # jti is "JWT ID", a unique identifier for a JWT.
-        BLACKLIST.add(jti)
+        blacklist.add_to_blacklist(jti)
         return {MESSAGE: "Successfully logged out"}, 200
 
 

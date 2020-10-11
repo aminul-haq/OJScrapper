@@ -41,7 +41,7 @@ class StudentModel(UserMixin):
         return Database.get_all_records(COLLECTION_NAME, query)
 
     @classmethod
-    def remove(self, query):
+    def remove(cls, query):
         return Database.remove(COLLECTION_NAME, query)
 
     def json(self):

@@ -17,7 +17,7 @@ app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['JWT_BLACKLIST_ENABLED'] = True  # enable blacklist feature
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']  # allow blacklisting for access and refresh tokens
 app.config["JWT_ACCESS_TOKEN_EXPIRES_MINUTES"] = 1440
-app.secret_key = "abcdxyz"
+app.secret_key = get_random_alphanumeric_string(10)
 
 api = Api(app)
 jwt = JWTManager(app)
@@ -34,7 +34,8 @@ def add_claims_to_jwt(identity):
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
-    return decrypted_token['jti'] in BLACKLIST  # Here we blacklist particular JWTs that have been created in the past.
+    # Here we blacklist particular JWTs that have been created in the past.
+    return blacklist.is_blacklisted(decrypted_token['jti'])
 
 
 api.add_resource(UserRegister, '/register')
