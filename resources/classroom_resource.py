@@ -22,12 +22,6 @@ INF = 2 ** 100
 
 
 def update_students(classroom):
-    StudentModel.remove({CLASSROOM_NAME: classroom.classroom_name})
-    for username in classroom.user_list:
-        user = UserModel.get_by_username(username)
-        if not user:
-            continue
-        StudentModel(username, user.email, classroom.classroom_name).save_to_mongo()
     solve_updater.update_students(classroom)
     solve_updater.update_contest_data_formatted()
 
@@ -164,3 +158,9 @@ class ClassroomUpdate(Resource):
 
         threading.Thread(target=update_students, args=[classroom]).start()
         return {MESSAGE: "Classroom data is being updated"}, 200
+
+
+def test():
+    database.Database.initialize()
+    classroom = ClassroomModel.get_by_classroom_name("Rated")
+    update_students(classroom)

@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
+from jwt import InvalidSignatureError
+
 from resources.user_resource import *
 from resources.classroom_resource import *
 from resources.student_resource import *
@@ -36,6 +38,14 @@ def add_claims_to_jwt(identity):
 def check_if_token_in_blacklist(decrypted_token):
     # Here we blacklist particular JWTs that have been created in the past.
     return blacklist.is_blacklisted(decrypted_token['jti'])
+
+
+@app.errorhandler(InvalidSignatureError)
+def invalid_signature(e):
+    return {
+               'message': 'Invalid signature token.',
+               'error': 'wrong_token ' + str(e)
+           }, 401
 
 
 api.add_resource(UserRegister, '/register')

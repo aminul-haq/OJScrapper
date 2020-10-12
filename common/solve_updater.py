@@ -17,6 +17,7 @@ from common import blacklist
 
 INF = 2 ** 100
 CONTEST_ID = "contest_id"
+CLASSROOM_NAME = "classroom_name"
 
 
 def update_user_with_username(username):
@@ -36,14 +37,14 @@ def update_user_with_username(username):
             oj_profiles[oj][SOLVE_LIST] = vjudge_data[oj]
         oj_profiles[oj][SOLVE_LIST] = [str(x) for x in oj_profiles[oj][SOLVE_LIST]]  # converting to list of strings
 
-    update_json(oj_profiles, CODEFORCES, cf_details)
-    update_json(oj_profiles, ATCODER, atc_details)
+    update_profile(oj_profiles, CODEFORCES, cf_details)
+    update_profile(oj_profiles, ATCODER, atc_details)
     # update_json(oj_profiles, LIGHTOJ, loj_details)
 
     user.update_to_mongo({"oj_info": oj_profiles})
 
 
-def update_json(oj_profiles, oj_name, arg):
+def update_profile(oj_profiles, oj_name, arg):
     if oj_name in oj_profiles and oj_profiles[oj_name] and oj_profiles[oj_name][USERNAME]:
         solve_list_data = arg(oj_profiles[oj_name][USERNAME])
         solve_list_data = [str(x) for x in solve_list_data]  # converting to list of strings
@@ -61,6 +62,14 @@ def update_all_users():
 
 
 def update_students(classroom):
+    StudentModel.remove({CLASSROOM_NAME: classroom.classroom_name})
+    for username in classroom.user_list:
+        user = UserModel.get_by_username(username)
+        if not user:
+            print("not found user: " + str(username))
+            continue
+        StudentModel(username, user.email, classroom.classroom_name).save_to_mongo()
+
     data_map = {}
     for contest in classroom.vjudge_contest_list:
         data_map[contest[CONTEST_ID]] = vjudge_sraper.get_contest_details_data(contest[CONTEST_ID])
@@ -72,7 +81,8 @@ def update_students(classroom):
             continue
         student = StudentModel.get_by_username_and_classroom_name(username, classroom.classroom_name)
         if not student:
-            print("no student found with username = " + str(username))
+            print(
+                "no student found with username = " + str(username) + " in classroom " + str(classroom.classroom_name))
             continue
         long_contests = []
         for contest in classroom.vjudge_contest_list:
@@ -143,13 +153,6 @@ def update_contest_data():
     contest_data = {}
     for contest_id in contest_id_set:
         contest_data[contest_id] = vjudge_sraper.get_contest_details_data(contest_id)
-    # json_data = {
-    #     "name": "vjudge_contest_data",
-    #     "updated_on": datetime.datetime.today().timestamp(),
-    #     "data": contest_data
-    # }
-    # Database.remove("contest_data", {})
-    # Database.insert("contest_data", json_data)
     ContestDataModel.update_contest_data(updated_on=datetime.datetime.today().timestamp(), data=contest_data)
 
 
@@ -162,18 +165,11 @@ def update_contest_data_formatted():
     contest_data = {}
     for contest_id in contest_id_set:
         contest_data[contest_id] = vjudge_sraper.get_contest_details_data_formatted(contest_id)
-    # json_data = {
-    #     "name": "vjudge_contest_data",
-    #     "updated_on": datetime.datetime.today().timestamp(),
-    #     "data": contest_data
-    # }
-    # Database.remove("contest_data", {})
-    # Database.insert("contest_data", json_data)
     ContestDataModel.update_contest_data(updated_on=datetime.datetime.today().timestamp(), data=contest_data)
 
 
 def count_in_range(values, low, high):
-    cnt = 0;
+    cnt = 0
     for val in values:
         if low <= val[1] <= high:
             cnt = cnt + 1
@@ -235,37 +231,6 @@ def update_everything():
 
 if __name__ == '__main__':
     Database.initialize()
+    update_everything()
     # print(UserModel.get_all_users())
     # update_all_users()
-
-"""
-def bootcamp_update_one(username):
-    user = UserModel.get_by_username(username)
-    classroom = ClassroomModel.get_by_classroom_name(user.classroom_name)
-    bootcamp = StudentModel.get_by_username(username)
-    if not bootcamp:
-        bootcamp = StudentModel(username=username, bootcamp_name=user.classroom_name)
-    if not classroom:
-        return
-
-    vjudge_handle = OjModel.get_by_username(username).oj_info[VJUDGE][USERNAME]
-    long_contests = []
-    for contest in classroom.vjudge_contest_list:
-        long_contests.append({
-            "contest_title": contest["contest_title"],
-            "total_problems": contest["total_problems"],
-            "minimum_solve_required": contest["minimum_solve_required"],
-            "solved_problems": solve_details_in_contest(contest_id=contest[CONTEST_ID], username=vjudge_handle)
-        })
-    data = {
-        "long_contests": long_contests
-    }
-    print(data)
-    bootcamp.update_to_mongo(data)
-
-
-def bootcamp_update_all():
-    user_list = Database.get_all_records("users")
-    for user in user_list:
-        bootcamp_update_one(user[USERNAME])
-"""

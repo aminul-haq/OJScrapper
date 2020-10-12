@@ -29,7 +29,6 @@ class ClassroomModel(UserMixin):
         if data is not None:
             return cls(**data)
 
-
     def json(self):
         return {
             "_id": self.id,
