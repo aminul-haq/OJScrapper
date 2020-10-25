@@ -1,4 +1,10 @@
-/venv/
+*.pyc
+
+venv/
+.cache/
+.idea/
+idea/
+
 /output/json_test.json
 /output/rank_list_21-08-2020.csv
 /output/

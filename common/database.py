@@ -9,11 +9,11 @@ class Database(object):
     @staticmethod
     def initialize():
         client = pymongo.MongoClient(Database.URI)
-        Database.DATABASE = client['fullstack']
+        Database.DATABASE = client['beta_test_01']
 
     @staticmethod
     def insert(collection, data):
-        Database.DATABASE[collection].insert(data)
+        Database.DATABASE[collection].insert_one(data)
 
     @staticmethod
     def find(collection, query):
@@ -35,13 +35,11 @@ class Database(object):
     def get_all_records(collection, query={}):
         return list(Database.DATABASE[collection].find(query))
 
-
     @staticmethod
     def update_one_set(collection, query, new_values):
         Database.DATABASE[collection].update_one(query, {"$set": new_values}, upsert=True)
 
-# if __name__ == '__main__':
-#     Database.initialize()
-#     data = Database.get_all_records("users")
-#     print(data)
-#     print()
+
+if __name__ == '__main__':
+    Database.initialize()
+

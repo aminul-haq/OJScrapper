@@ -1,8 +1,11 @@
-import datetime
+from datetime import datetime, timedelta
+import threading
+import random
+import string
 
 from flask_restful import Resource, reqparse
-from flask import request
-from werkzeug.security import safe_str_cmp
+from flask import request, current_app as app
+from apscheduler.schedulers.background import BackgroundScheduler
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -11,11 +14,15 @@ from flask_jwt_extended import (
     jwt_required,
     get_raw_jwt
 )
+
+from email_service import mail_sender
 from models.user_model import UserModel
+from models.whitlist_emails_model import WhitelistEmailsModel
 from models.classroom_model import ClassroomModel
-from common.blacklist import BLACKLIST
+from common import blacklist
 from models.oj_model import OjModel
-from common.solve_updater import update_user_with_username, update_all
+from common.solve_updater import update_user_with_username, update_everything
+from models.mail_templates import MailTemplate
 
 FIRST_NAME = "first_name"
 LAST_NAME = "last_name"
@@ -24,6 +31,13 @@ EMAIL = "email"
 MESSAGE = "message"
 OJ_INFO = "oj_info"
 PASSWORD = "password"
+IS_ADMIN = "is_admin"
+
+
+def get_random_alphanumeric_string(length):
+    letters_and_digits = string.ascii_letters + string.digits
+    result_str = ''.join((random.choice(letters_and_digits) for i in range(length)))
+    return result_str
 
 
 class UserRegister(Resource):
@@ -35,24 +49,28 @@ class UserRegister(Resource):
         if UserModel.get_by_email(data[EMAIL]):
             return {MESSAGE: "A user with that email already exists"}, 400
 
+        if not WhitelistEmailsModel.check_email(data[EMAIL]):
+            return {MESSAGE: "email is not valid"}, 400
+
         data["password"] = UserModel.encrypt_password(data["password"])
         user = UserModel(**data)
         user.save_to_mongo()
 
         oj_data = OjModel(data[USERNAME])
         oj_data.save_to_mongo()
-
+        # app.logger.info("User created successfully " + user.username + " " + user.email)
         return {MESSAGE: "User created successfully."}, 201
 
 
 class OJUpdate(Resource):
     @jwt_required
     def post(self):
-        claims = get_raw_jwt()
-        print(claims)
-        if claims["identity"] != "admin":
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user.is_admin:
             return {MESSAGE: "Admin privilege required"}, 401
-        update_all()
+        # update_everything()
+        threading.Thread(target=update_everything).start()
+        return {MESSAGE: "Data is being updated"}, 200
 
 
 class User(Resource):
@@ -68,11 +86,12 @@ class User(Resource):
                    LAST_NAME: user.last_name,
                    USERNAME: user.username,
                    EMAIL: user.email,
+                   IS_ADMIN: user.is_admin,
                    OJ_INFO: oj_data.oj_info if oj_data else {}
                }, 200
 
     @jwt_required
-    def post(cls):
+    def post(self):
         data = request.get_json()
         if data and USERNAME in data:
             user = UserModel.get_by_username(data[USERNAME])
@@ -85,7 +104,8 @@ class User(Resource):
                            LAST_NAME: user.last_name,
                            USERNAME: user.username,
                            EMAIL: user.email,
-                           OJ_INFO: oj_data.oj_info if oj_data else {}
+                           OJ_INFO: oj_data.oj_info if oj_data else {},
+                           "delete_access": user.is_admin
                        }, 200
 
         else:
@@ -101,7 +121,10 @@ class User(Resource):
                         OJ_INFO: oj_data.oj_info if oj_data else {}
                     }
                 )
-            return user_list, 200
+            return {
+                       "user_list": user_list,
+                       "delete_access": UserModel.get_by_username(get_jwt_identity()).is_admin
+                   }, 200
 
     @jwt_required
     def put(self):
@@ -116,6 +139,15 @@ class User(Resource):
             email_user = UserModel.get_by_email(data[EMAIL])
             if EMAIL in data and email_user and email_user != user:
                 return {MESSAGE: "email already exists"}, 400
+            if not WhitelistEmailsModel.check_email(data[EMAIL]):
+                return {MESSAGE: "email is not valid"}, 400
+
+        if PASSWORD in data:
+            if "old_password" not in data:
+                return {MESSAGE: "current password is required to set new password"}, 400
+            if not UserModel.login_valid_username(user.username, data["old_password"]):
+                return {MESSAGE: "wrong current password"}, 400
+            del data["old_password"]
 
         user.update_to_mongo(data)
 
@@ -123,11 +155,11 @@ class User(Resource):
         if oj_info:
             oj_info.update_to_mongo(data)
 
-        update_user_with_username(user.username)
-        return {MESSAGE: "data updated"}, 200
+        threading.Thread(target=update_user_with_username, args=[user.username]).start()
+        return {MESSAGE: "User data is being updated"}, 200
 
     @jwt_required
-    def delete(cls):
+    def delete(self):
         user = UserModel.get_by_username(get_jwt_identity())
         if not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
@@ -136,7 +168,36 @@ class User(Resource):
         if not user:
             return {MESSAGE: "User Not Found"}, 404
         user.delete_from_db()
+        oj_info = OjModel.get_by_username(data[USERNAME])
+        oj_info.delete_from_db()
         return {MESSAGE: "User deleted."}, 200
+
+
+class PasswordReset(Resource):
+    def post(self):
+        data = request.get_json()
+
+        if USERNAME in data:
+            user = UserModel.get_by_username(data[USERNAME])
+        elif EMAIL in data:
+            user = UserModel.get_by_email(data[EMAIL])
+        else:
+            return {MESSAGE: "username or email is required"}, 400
+        if not user:
+            return {MESSAGE: "invalid username or password"}, 400
+
+        temp_pass = get_random_alphanumeric_string(8)
+        user.reset_pass = {
+            "expires_on": (datetime.today() + timedelta(hours=1)).timestamp(),
+            "temp_pass": UserModel.encrypt_password(temp_pass)
+        }
+        user.update_to_mongo()
+
+        mail_template = MailTemplate.get_by_template_name("password_reset")
+        threading.Thread(target=mail_sender.send_mail,
+                         args=[[user.email], mail_template.subject, mail_template.message % temp_pass]).start()
+
+        return {MESSAGE: "Please check your mail inbox"}, 200
 
 
 class Lookup(Resource):
@@ -199,7 +260,7 @@ class UserLogin(Resource):
         data = request.get_json()
         user = UserModel.get_by_username(data[USERNAME])
         if user and UserModel.login_valid_username(data[USERNAME], data[PASSWORD]):
-            expires = datetime.timedelta(days=7)
+            expires = timedelta(days=7)
             access_token = create_access_token(identity=data[USERNAME], fresh=True, expires_delta=expires)
             refresh_token = create_refresh_token(data[USERNAME])
             return {
@@ -214,7 +275,7 @@ class UserLogout(Resource):
     @jwt_required
     def post(self):
         jti = get_raw_jwt()["jti"]  # jti is "JWT ID", a unique identifier for a JWT.
-        BLACKLIST.add(jti)
+        blacklist.add_to_blacklist(jti)
         return {MESSAGE: "Successfully logged out"}, 200
 
 
