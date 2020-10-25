@@ -1,24 +1,19 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
 import requests
-# import time
-from bs4 import BeautifulSoup
-import csv
-import re
-import json
 
 
 def profile_details(handle):
-    url = "https://codeforces.com/api/user.status?handle=" + handle
-    response = requests.get(url)
-    data = response.json()
-    return reformat_accepted_solve_data(data)
+    try:
+        url = "https://codeforces.com/api/user.status?handle=" + handle
+        response = requests.get(url)
+        data = response.json()
+        return reformat_accepted_solve_data(data)
+    except:
+        return []
 
 
 def reformat_accepted_solve_data(data):
+    if not data or "status" not in data or data["status"] != "OK":
+        return []
     data = list(filter(lambda sub: sub["verdict"] == 'OK', data["result"]))
     solve_set = set()
     for submission in data:
@@ -28,10 +23,11 @@ def reformat_accepted_solve_data(data):
     return list(solve_set)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+def test():
     handle = "aminul"
     data = profile_details(handle)
     print(data)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+if __name__ == '__main__':
+    test()

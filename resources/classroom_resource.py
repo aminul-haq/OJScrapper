@@ -1,8 +1,5 @@
-import json
-
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
 from flask import request
-from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -17,7 +14,7 @@ from models.classroom_model import ClassroomModel
 from models.user_model import UserModel
 from models.oj_model import OjModel
 from models.student_model import StudentModel
-from common import solve_updater
+from common import solve_updater, database
 
 MESSAGE = "message"
 CLASSROOM_NAME = "classroom_name"
@@ -25,9 +22,6 @@ INF = 2 ** 100
 
 
 def update_students(classroom):
-    StudentModel.remove({CLASSROOM_NAME: classroom.classroom_name})
-    for username in classroom.user_list:
-        StudentModel(username, classroom.classroom_name).save_to_mongo()
     solve_updater.update_students(classroom)
     solve_updater.update_contest_data_formatted()
 
@@ -88,7 +82,7 @@ class Classroom(Resource):
     def put(self):
         user = UserModel.get_by_username(get_jwt_identity())
         data = request.get_json()
-        if not user.is_admin:
+        if not user or not user.is_admin:
             return {MESSAGE: "admin privilege required"}, 400
 
         if not data or CLASSROOM_NAME not in data:
@@ -141,9 +135,32 @@ class ClassRankList(Resource):
         user_list = classroom.user_list
         vjudge_contest_list = classroom.vjudge_contest_list
         if "contest_type" in data and data["contest_type"] != "all":
-            vjudge_contest_list = filter(lambda contest: contest["contest_type"] == data["contest_type"],
-                                         vjudge_contest_list)
-        # vjudge_contest_list = [x["contest_id"] for x in vjudge_contest_list]
+            vjudge_contest_list = list(filter(lambda contest: contest["contest_type"] == data["contest_type"],
+                                              vjudge_contest_list))
         start_time = data["start_time"] if "start_time" in data else -INF
         end_time = data["end_time"] if "end_time" in data else INF
         return solve_updater.get_rank_list_from_db(user_list, vjudge_contest_list, start_time, end_time), 200
+
+
+class ClassroomUpdate(Resource):
+    @jwt_required
+    def post(self):
+        user = UserModel.get_by_username(get_jwt_identity())
+        if not user.is_admin:
+            return {MESSAGE: "admin privilege required"}, 400
+
+        data = request.get_json()
+        if CLASSROOM_NAME not in data:
+            return {MESSAGE: "invalid data"}, 400
+        classroom = ClassroomModel.get_by_classroom_name(data[CLASSROOM_NAME])
+        if not classroom:
+            return {MESSAGE: "classroom not found"}, 404
+
+        threading.Thread(target=update_students, args=[classroom]).start()
+        return {MESSAGE: "Classroom data is being updated"}, 200
+
+
+def test():
+    database.Database.initialize()
+    classroom = ClassroomModel.get_by_classroom_name("Rated")
+    update_students(classroom)

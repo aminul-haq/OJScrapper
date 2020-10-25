@@ -32,7 +32,6 @@ def scrape_submission(session, user_id):
         for x in row.values.tolist():
             sub_list.extend([int(s) for s in str(x).split() if s.isdigit()])
     return sub_list
-    # print(sub_list)
 
 
 def save_as_csv(sub_list, user_id):
@@ -53,8 +52,11 @@ def main():
 
 
 def profile_details(user_id):
-    session = get_session()
-    return scrape_submission(session, user_id)
+    try:
+        session = get_session()
+        return scrape_submission(session, user_id)
+    except:
+        return []
 
 
 if __name__ == '__main__':

@@ -10,8 +10,9 @@ COLLECTION_NAME = "student"
 
 
 class StudentModel(UserMixin):
-    def __init__(self, username, classroom_name, user_details={}, long_contests=[], _id=None):
+    def __init__(self, username, email,  classroom_name, user_details={}, long_contests=[], _id=None):
         self.username = username
+        self.email = email
         self.classroom_name = classroom_name
         self.user_details = user_details
         self.long_contests = long_contests
@@ -40,13 +41,14 @@ class StudentModel(UserMixin):
         return Database.get_all_records(COLLECTION_NAME, query)
 
     @classmethod
-    def remove(self, query):
+    def remove(cls, query):
         return Database.remove(COLLECTION_NAME, query)
 
     def json(self):
         return {
             "_id": self.id,
             "username": self.username,
+            "email": self.email,
             "classroom_name": self.classroom_name,
             "user_details": self.user_details,
             "long_contests": self.long_contests
@@ -61,5 +63,5 @@ class StudentModel(UserMixin):
         for key in new_values:
             if key in json and key != "username" and key != "_id":
                 updated_values[key] = new_values[key]
-        # del updated_values['_id']
+        del updated_values['_id']
         Database.update_one_set(COLLECTION_NAME, {"username": self.username}, updated_values)

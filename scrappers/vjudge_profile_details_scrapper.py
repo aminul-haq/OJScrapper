@@ -3,15 +3,17 @@ from bs4 import BeautifulSoup
 import json
 import pandas
 
+
 def solve_details(handle):
     url = "https://vjudge.net/user/solveDetail/" + handle
     response = requests.get(url)
     # soup = BeautifulSoup(response.text, "html.parser")
     solve_data = response.json()
     print(solve_data)
-    #return solve_data
-    #print(pandas.json_normalize(solve_data).to_html)
-    return pandas.json_normalize(solve_data).to_html()
+    return solve_data;
+    # return solve_data
+    # print(pandas.json_normalize(solve_data).to_html)
+    # return pandas.json_normalize(solve_data).to_html()
 
 
 def get_handles_list():
