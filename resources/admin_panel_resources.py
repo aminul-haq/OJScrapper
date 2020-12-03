@@ -7,6 +7,7 @@ from models.user_model import UserModel
 from models.whitlist_emails_model import WhitelistEmailsModel
 from models.announcemnets_model import AnnouncementsModel
 from models.todos_model import TodosModel
+from models.mail_templates import MailTemplate
 from flask_restful import Resource
 from flask import request
 from flask_jwt_extended import (
@@ -219,6 +220,11 @@ class WhitelistEmail(Resource):
         whitelist_email.email_list.extend(data["email_list"])
         whitelist_email.email_list = list(set(whitelist_email.email_list))
         whitelist_email.update_to_mongo()
+
+        # sending invitation mail to newly added mails
+        mail_message = MailTemplate.get_by_template_name("invitation")
+        mail_sender.send_mail_in_background_thread(data["email_list"], mail_message.subject, mail_message.message)
+
         return {MESSAGE: "emails added to whitelist"}, 200
 
     @jwt_required

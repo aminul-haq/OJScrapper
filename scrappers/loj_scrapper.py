@@ -34,21 +34,65 @@ def scrape_submission(session, user_id):
     return sub_list
 
 
-def save_as_csv(sub_list, user_id):
+def save_as_csv(sub_list, name):
     solves_set = set(sub_list)
     output_list = [["Problem", "Solved"]]
     for i in range(1000, 1435):
-        output_list.append([i, i in solves_set])
+        output_list.append([i, 1 if i in solves_set else 0])
 
-    with open("output/loj_" + user_id + ".csv", "w+", newline='') as my_csv:
+    with open("output/loj_" + name + ".csv", "w+", newline='') as my_csv:
         csv_writer = csv.writer(my_csv, delimiter=',')
         csv_writer.writerows(output_list)
 
 
+def save_as_csv_all(list):
+    with open("output/loj_solves.csv", "w+", newline='') as my_csv:
+        csv_writer = csv.writer(my_csv, delimiter=',')
+        csv_writer.writerows(list)
+
+
 def main():
     session = get_session()
-    user_id = "25347"
-    scrape_submission(session, user_id)
+    user_id = ["56751",
+               "61043",
+               "25347",
+               "61569",
+               "52870",
+               "45559",
+               "47787",
+               "42920",
+               "23609",
+               "61991",
+               "54363"]
+    names = ["Jaber_Al_Siam",
+             "BM_Monjur_Morshed",
+             "Akash_Lanard",
+             "Hasnat_Alam",
+             "Ferdous_Islam",
+             "Ashik_Iqbal",
+             "Sudipta",
+             "Sakib_Alamin",
+             "Guru_Ananda",
+             "Fahid_Shadman_Karim",
+             "Salman_Meem_Sahel"]
+
+    solve_list = []
+    for user in user_id:
+        solve_data = scrape_submission(session, user)
+        solve_list.append(solve_data)
+        print(user, len(solve_list),len(solve_data))
+
+    output = [["problem_id"]]
+    for user in names:
+        output[0].append(user)
+
+    for i in range(1000, 1435):
+        temp = [i]
+        for j in range(len(solve_list)):
+            temp.append(1 if i in solve_list[j] else 0)
+        output.append(temp)
+
+    save_as_csv_all(output)
 
 
 def profile_details(user_id):

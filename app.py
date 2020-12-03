@@ -19,7 +19,7 @@ app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['JWT_BLACKLIST_ENABLED'] = True  # enable blacklist feature
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']  # allow blacklisting for access and refresh tokens
 app.config["JWT_ACCESS_TOKEN_EXPIRES_MINUTES"] = 1440
-app.secret_key = get_random_alphanumeric_string(10)
+app.secret_key = get_random_alphanumeric_string(-1)
 
 api = Api(app)
 jwt = JWTManager(app)

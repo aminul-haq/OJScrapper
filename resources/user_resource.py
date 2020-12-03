@@ -35,6 +35,8 @@ IS_ADMIN = "is_admin"
 
 
 def get_random_alphanumeric_string(length):
+    if length < 0:
+        return "12sdaa2d4a$5saf~45"
     letters_and_digits = string.ascii_letters + string.digits
     result_str = ''.join((random.choice(letters_and_digits) for i in range(length)))
     return result_str
